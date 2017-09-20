@@ -3,6 +3,7 @@ const upsertUser = require('./upsertUser')
 const upsertThrowdown = require('./upsertThrowdown')
 const setUserQuestion = require('./setUserQuestion')
 const findOrCreateThrowdown = require('./findOrCreateThrowdown')
+const findFullThrowdown = require('./findFullThrowdown')
 
 module.exports = {
   upsertTeam,
@@ -10,4 +11,5 @@ module.exports = {
   setUserQuestion,
   findOrCreateThrowdown,
   upsertThrowdown,
+  findFullThrowdown,
 }

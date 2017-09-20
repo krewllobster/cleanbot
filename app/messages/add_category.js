@@ -8,8 +8,6 @@ module.exports = ({_id}) => {
     .then(([td, categories]) => {
       const used = td.categories
       const catList = []
-      console.log('CHECKING CATEGORIES**************')
-      console.log(used)
       categories.forEach(c => {
         if (!used.includes(c._id)) {
           catList.push({
@@ -22,7 +20,7 @@ module.exports = ({_id}) => {
     })
     .then(catList => {
       return {
-        title: `Please select a question category (you'll be able to add more!)`,
+        title: `Choose a question category to add:`,
         callback_id: 'add_throwdown_category',
         attachment_type: 'default',
         actions: [

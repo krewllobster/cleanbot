@@ -16,6 +16,7 @@
     "dotenv": "^4.0.0",
     "ejs": "^2.5.7",
     "express": "^4.15.4",
+    "moment": "^2.18.1",
     "mongoose": "^4.11.11",
     "mongoose-findorcreate": "^2.0.0",
     "redux": "^3.7.2",

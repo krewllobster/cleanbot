@@ -4,8 +4,8 @@ const findOrCreate = require('mongoose-findorcreate')
 const throwdownSchema = new mongoose.Schema({
   name: String,
   categories: [{type: Number, ref: 'Category', field: '_id'}],
-  participants: [{type: String, ref: 'User', field: '_id'}],
-  created_by: {type: String, ref: 'User', field: '_id'},
+  participants: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+  created_by: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
   team_id: String,
   start_date: Date,
   privacy: String,
