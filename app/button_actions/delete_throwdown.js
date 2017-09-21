@@ -30,7 +30,7 @@ module.exports = ({
             messageList.throwdown_deleted(throwdownToDelete)
           ]
         }
-        messagePromises.push(messageController(message, res))
+        if (p.opt_in) messagePromises.push(messageController(message, res))
       })
       return Promise.all(messagePromises)
     })
