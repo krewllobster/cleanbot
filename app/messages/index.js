@@ -6,6 +6,7 @@ const add_category = require('./add_category')
 const add_another_category = require('./add_another_category')
 const start_date_buttons = require('./start_date_buttons')
 const single_throwdown = require('./single_throwdown')
+const throwdown_deleted = require('./throwdown_deleted')
 
 module.exports = {
   reg_question_1,
@@ -16,4 +17,5 @@ module.exports = {
   add_another_category,
   start_date_buttons,
   single_throwdown,
+  throwdown_deleted,
 }

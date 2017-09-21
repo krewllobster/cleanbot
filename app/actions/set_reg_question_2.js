@@ -1,4 +1,4 @@
-const { setUserQuestion } = require('../db_actions')
+const { upsertUser } = require('../db_actions')
 const messageController = require('../controllers/messageController')
 const messageList = require('../messages')
 
@@ -11,12 +11,13 @@ module.exports = (payload, action, res) => {
   } = payload
   const { value } = action.selected_options[0]
 
-  return setUserQuestion({
-    user_id,
-    team_id,
-    question: 'Favorite_Color',
-    answer: value
-  })
+
+  return upsertUser(
+    {user_id, team_id},
+    {$set:
+      {'profile.Favorite_Color': value}
+    }
+  )
   .then(user => {
     console.log('user updated with previous question')
     console.log(user)

@@ -1,4 +1,4 @@
-const { setUserQuestion } = require('../db_actions')
+const { upsertUser } = require('../db_actions')
 const messageController = require('../controllers/messageController')
 const messageList = require('../messages')
 
@@ -12,12 +12,12 @@ module.exports = (payload, action, res) => {
 
   const { value } = action
 
-  return setUserQuestion({
-    user_id,
-    team_id,
-    question: 'Desert_Island',
-    answer: value
-  })
+  return upsertUser(
+    {user_id, team_id},
+    {$set:
+      {'profile.Desert_Island': value}
+    }
+  )
   .then(user => {
     console.log('user updated with previous question')
     console.log(user)
@@ -26,7 +26,7 @@ module.exports = (payload, action, res) => {
       type: 'chat.update',
       message_ts,
       channel_id,
-      attachments: {}
+      attachments: []
     }
     return message
   })

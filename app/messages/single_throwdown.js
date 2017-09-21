@@ -1,12 +1,27 @@
 const moment = require('moment')
 
-module.exports = (throwdown) => {
-  let started = moment().isSameOrAfter(
-    throwdown.start_date, 'day'
-  )
+module.exports = (throwdown, user_id) => {
 
-  console.log('formating single throwdown_______________')
-  console.log(throwdown)
+  const buttonList = buttons(throwdown._id)
+
+  const started = moment().isSameOrAfter(throwdown.start_date, 'day')
+  const private = throwdown.privacy === 'private'
+  const isOwner = throwdown.created_by.user_id === user_id
+  const canJoin = !throwdown.participants.some(p => p.user_id === user_id)
+  console.log({
+    started,
+    private,
+    isOwner,
+    canJoin
+  })
+  let actions = []
+
+  if (isOwner && private)   actions.push(buttonList.invite)
+  if (isOwner && !canJoin)  actions.push(buttonList.delete)
+  if (!isOwner && canJoin)  actions.push(buttonList.join)
+  if (!isOwner && !canJoin) actions.push(buttonList.leave)
+
+  console.log(actions)
 
   return {
     title: throwdown.name,
@@ -45,9 +60,60 @@ module.exports = (throwdown) => {
         short: true
       }
     ],
+  actions,
   "mrkdwn_in": [
         "text",
         "pretext"
     ],
+  }
+}
+
+const buttons = (throwdown_id) => {
+  const val = (command) => JSON.stringify({
+    throwdown_id,
+    command,
+  })
+
+  return {
+    join: {
+      text: 'Join Throwdown',
+      name: 'join_throwdown',
+      value: val('join_throwdown'),
+      type: 'button',
+      style: 'primary'
+    },
+    leave: {
+      text: 'Leave Throwdown',
+      name: 'leave_throwdown',
+      value: val('leave_throwdown'),
+      type: 'button',
+      style: 'danger',
+      confirm: {
+        title: 'Are you sure?',
+        text: 'If this throwdown has started, you will not be able to rejoin!',
+        ok_text: 'Yes, leave this Throwdown',
+        dismiss_text: 'No, stay in this Throwdown',
+      }
+    },
+    delete: {
+      text: 'Delete Throwdown',
+      name: 'delete_throwdown',
+      value: val('delete_throwdown'),
+      type: 'button',
+      style: 'danger',
+      confirm: {
+        title: 'Are you sure?',
+        text: 'Deleteing this Throwdown cannot be undone',
+        ok_text: 'Yes, delete this Throwdown',
+        dismiss_text: 'No, keep this Throwdown',
+      },
+    },
+    invite: {
+      text: 'Send Invites',
+      name: 'send_invite',
+      value: val('send_invite'),
+      type: 'button',
+      style: 'primary',
+    }
   }
 }

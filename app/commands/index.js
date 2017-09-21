@@ -7,6 +7,5 @@ module.exports = () => {
     register: (body) => register(body),
     unknown: (body) => unknown(body),
     'new throwdown': (body) => createThrowdown(body),
-    'create throwdown': (body) => createThrowdown(body),
   }
 }

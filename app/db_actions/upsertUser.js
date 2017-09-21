@@ -1,10 +1,9 @@
 const { User } = require('../models')
 
-module.exports = (body) => {
-  const {user_id, team_id} = body
+module.exports = (matchFields, updateFields) => {
   return User.findOneAndUpdate(
-    {team_id, user_id},
-    body,
+    matchFields,
+    updateFields,
     {upsert: true, new: true}
   )
   .then(user => {

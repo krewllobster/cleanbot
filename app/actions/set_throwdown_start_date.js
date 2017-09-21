@@ -1,6 +1,10 @@
 const messageController = require('../controllers/messageController')
 const messageList = require('../messages')
-const { upsertThrowdown, findFullThrowdown } = require('../db_actions')
+const {
+  upsertThrowdown,
+  findFullThrowdown,
+  upsertUser,
+} = require('../db_actions')
 
 module.exports = (payload, action, res) => {
   const {
@@ -16,7 +20,14 @@ module.exports = (payload, action, res) => {
     {_id},
     {$set: {start_date: new Date(date)}}
   )
-    .then(({_id}) => {
+    .then(throwdown => {
+      return upsertUser(
+        {user_id, team_id},
+        {$push: {throwdowns: throwdown._id}}
+      )
+    })
+    .then(user => {
+      console.log('throwdown saved and user updated')
       return findFullThrowdown({_id})
     })
     .then(throwdown => {
@@ -27,7 +38,7 @@ module.exports = (payload, action, res) => {
         type: 'chat.update',
         text: `Awesome! Your Throwdown is all set up.`,
         attachments: [
-          messageList.single_throwdown(throwdown)
+          messageList.single_throwdown(throwdown, user_id)
         ]
       }
       return messageController(message, res)
