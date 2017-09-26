@@ -9,6 +9,10 @@ const throwdownSchema = new mongoose.Schema({
   team_id: String,
   start_date: Date,
   privacy: String,
+  channel: {
+    id: String,
+    name: String,
+  }
 }, {toObject: {virtuals:  true}})
 
 

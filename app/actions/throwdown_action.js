@@ -24,6 +24,6 @@ module.exports = (payload, action, res) => {
 
   const actions = button_actions(res)
 
-  actions[command]({user_id, team_id, channel_id, throwdown_id})
+  actions[command]({message_ts, user_id, team_id, channel_id, throwdown_id})
 
 }

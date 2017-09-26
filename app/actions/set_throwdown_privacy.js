@@ -1,6 +1,7 @@
 const messageController = require('../controllers/messageController')
 const messageList = require('../messages')
 const { upsertThrowdown } = require('../db_actions')
+const { createPublicChannel } = require('../utils')
 
 module.exports = (payload, action, res) => {
   const {
@@ -11,6 +12,7 @@ module.exports = (payload, action, res) => {
   } = payload
 
   const { _id, privacy } = JSON.parse(action.value)
+
 
   return upsertThrowdown({_id}, {privacy})
     .then(throwdown => {

@@ -15,11 +15,11 @@ module.exports = ({body}, res) => {
 
   shortAuth(body, res)
     .then(messageSent => {
-      console.log('message Sent: ' + messageSent)
       console.log('command controller reached')
+      console.log(body)
 
       res.status(200).end()
-      if (messageSent) return Promise.reject('Message already sent')
+      if (messageSent) return Promise.reject('Message already sent' + messagesent)
 
       if (commands.hasOwnProperty(body.text)) {
         return commands[body.text](body)
