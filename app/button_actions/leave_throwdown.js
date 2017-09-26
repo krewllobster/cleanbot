@@ -11,14 +11,14 @@ module.exports = ({
 
   const user = User.findOneAndUpdate(
     {user_id, team_id},
-    {$push: {throwdowns: throwdown_id}}
+    {$pull: {throwdowns: throwdown_id}}
   )
 
   const channel = User.findOne({user_id, team_id})
     .then(user => {
       return Throwdown.findOneAndUpdate(
         {_id: throwdown_id},
-        {$push: {participants: user._id}}
+        {$pull: {participants: user._id}}
       )
     })
     .then(throwdown => throwdown.channel)
@@ -26,11 +26,11 @@ module.exports = ({
 
   Promise.all([user, channel])
     .then(([user, channel]) => {
-      res.webClient.conversations.invite(channel.id, user.user_id)
+      res.webClient.conversations.kick(channel.id, user.user_id)
 
       const repl_message = {
         type: 'chat.update',
-        text: 'Throwdown joined. You should see an invite!',
+        text: 'Throwdown left. You should no longer see the channel.',
         message_ts,
         channel_id,
         attachments: []

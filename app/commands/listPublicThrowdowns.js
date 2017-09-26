@@ -4,30 +4,18 @@ const { single_throwdown } = require('../messages')
 module.exports = (body) => {
   const {name, team_id, user_name, user_id, channel_id} = body
 
-  return User.findOne({user_id, team_id})
-    .populate({
-      path: 'throwdowns',
-      populate: {
-        path: 'created_by'
-      }
+  return Throwdown.find({team_id})
+    .populate('created_by')
+    .populate('participants')
+    .populate('categories')
+    .exec()
+    .catch(err => {
+      return err
     })
-    .populate({
-      path: 'throwdowns',
-      populate: {
-        path: 'participants'
-      }
-    })
-    .populate({
-      path: 'throwdowns',
-      populate: {
-        path: 'categories'
-      }
-    })
-    .then(user => {
-      console.log(user)
+    .then(throwdowns => {
       let attachments = []
-      user.throwdowns.forEach(td => {
-        if (td.privacy === 'public') {
+      throwdowns.forEach(td => {
+        if(td.privacy === 'public') {
           attachments.push(single_throwdown(td, user_id))
         }
       })
@@ -36,14 +24,10 @@ module.exports = (body) => {
         team_id,
         user_id,
         channel_id,
-        text: 'Here are all of the public Throwdowns!',
+        text: 'Here are all the throwdowns in which you are a participant',
         attachments
       }
-
       return message
     })
-    .catch(err => {
-      return err
-    })
-
+    .catch(err => err)
 }
