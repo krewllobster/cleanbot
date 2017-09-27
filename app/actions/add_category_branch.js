@@ -1,5 +1,5 @@
 const { upsertThrowdown } = require('../db_actions')
-const messageController = require('../controllers/messageController')
+const multiMessageController = require('../controllers/multiMessageController')
 const messageList = require('../messages')
 
 module.exports = (payload, action, res) => {
@@ -12,26 +12,23 @@ module.exports = (payload, action, res) => {
 
   const { _id, add } = JSON.parse(action.value)
 
-  if (add) {
-    messageList.add_category({_id})
-      .then(attachment => {
-        const message = {
-          message_ts,
-          channel_id,
-          type: 'chat.update',
-          attachments: [attachment]
-        }
-        messageController(message, res)
-      })
-  } else {
-    const message = {
-      message_ts,
-      channel_id,
-      type: 'chat.update',
-      attachments: [
-        messageList.start_date_buttons({_id})
-      ]
-    }
-    messageController(message, res)
-  }
+  return Promise.resolve(
+    add ? messageList.add_category({_id}) : messageList.start_date_buttons({_id})
+  )
+    .then(attachment => {
+      let message = {
+        client: 'botClient',
+        type: 'chat.update',
+        message_ts,
+        channel_id,
+        attachments: [attachment]
+      }
+
+      return multiMessageController([message], res)
+    })
+    .then(response => console.log(response))
+    .catch(err => {
+      console.log('error in add category branch::' + err)
+      return err
+    })
 }

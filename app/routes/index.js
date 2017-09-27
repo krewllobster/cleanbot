@@ -4,6 +4,7 @@ const {
   actionController,
 } = require('../controllers')
 
+const storeCreate = require('../../store')
 
 module.exports = (app) => {
 
@@ -16,6 +17,8 @@ module.exports = (app) => {
   app.get('/auth', (req, res) => {
     authController(req, res)
   })
+
+  app.use(storeCreate())
 
   app.post('/slack/actions', (req, res) => {
     actionController(req, res)

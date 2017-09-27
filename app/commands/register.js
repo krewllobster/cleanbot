@@ -7,7 +7,8 @@ module.exports = (body) => {
       team_id: body.team_id,
       channel_id: body.channel_id,
       user_id: body.user_id,
-      type: 'chat.message',
+      type: 'chat.dm',
+      client: 'botClient',
       text: `Please answer a few questions to complete registration!`,
       attachments: [
         messageList['reg_question_1'](body)

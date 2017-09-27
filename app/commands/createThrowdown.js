@@ -17,7 +17,9 @@ module.exports = (body) => {
     return Promise.resolve(noNameResponse(body))
   }
 
-  return findOrCreateThrowdown(body)
+  return findOrCreateThrowdown(
+    {name, team_id, user_id}
+  )
     .then(({created, doc}) => {
       if(created) {
         return set_privacy(body, doc._id)
@@ -37,16 +39,19 @@ const set_privacy = ({name, team_id, channel_id, user_id}, _id) => ({
   team_id,
   channel_id,
   user_id,
-  type: 'chat.message',
+  client: 'botClient',
+  type: 'chat.dm',
   attachments: [
     messageList.set_privacy({_id})
   ]
 })
+
 const name_taken = ({team_id, channel_id, user_id}) => ({
   team_id,
   channel_id,
   user_id,
-  type: 'chat.ephemeral',
+  client: 'botClient',
+  type: 'chat.dm',
   text: `Look's like that name has been taken, sorry!`,
   attachments: []
 })
@@ -55,7 +60,8 @@ const noNameResponse = ({team_id, channel_id, user_id}) => ({
   team_id,
   channel_id,
   user_id,
-  type: 'chat.ephemeral',
+  client: 'botClient',
+  type: 'chat.dm',
   text: `You forgot to add a name after "new throwdown"!`,
   attachments: []
 })

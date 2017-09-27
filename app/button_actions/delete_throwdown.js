@@ -1,4 +1,4 @@
-const messageController = require('../controllers/messageController')
+const multiMessageController = require('../controllers/multiMessageController')
 const messageList = require('../messages')
 const {
   deleteThrowdown,
@@ -14,46 +14,46 @@ module.exports = ({
   channel_id,
   throwdown_id
 }, res) => {
+
   let throwdownToDelete
 
   findFullThrowdown({_id: throwdown_id})
     .then(throwdown => {
+      console.log('setting variable to throwdown')
       throwdownToDelete = throwdown
+      console.log(throwdownToDelete)
       return deleteThrowdown({_id: throwdown_id})
     })
     .then(() => {
-      let messagePromises = []
+      let messages = []
       const repl_message = {
         type: 'chat.update',
+        client: 'botClient',
         message_ts,
         channel_id,
         text: 'This throwdown has been deleted',
         attachments: []
       }
-      messagePromises.push(messageController(repl_message, res))
+      messages.push(repl_message)
+
       throwdownToDelete.participants.forEach(p => {
         const message = {
           user_id: p.user_id,
           team_id,
           channel_id,
-          type: 'chat.ephemeral',
+          type: 'chat.dm',
+          client: 'botClient',
           attachments: [
             messageList.throwdown_deleted(throwdownToDelete)
           ]
         }
-        if (p.opt_in) messagePromises.push(messageController(message, res))
+        if (p.opt_in && p.user_id !== user_id) messages.push(message)
       })
-      return Promise.all(messagePromises)
+      return multiMessageController(messages, res)
     })
     .then(results => {
       console.log('messages sent to participants')
       console.log(results)
-    })
-    .then(() => {
-      return archiveChannel(res.webClient, throwdownToDelete.channel.id)
-    })
-    .then(archived => {
-      console.log('conversation successfully archived')
     })
     .catch(err => {
       console.log('error deleting throwdown and sending messages to participants::' + err)

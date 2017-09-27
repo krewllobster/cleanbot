@@ -21,6 +21,8 @@ module.exports = (req, res) => {
 
   return axios.get(uri, {params})
     .then(response => {
+      console.log('AUTH RESPONSE ------------')
+      console.log(response.data)
       const body = response.data
       if(!body.ok) {
         return new Error('Something in auth went wrong')
@@ -28,6 +30,7 @@ module.exports = (req, res) => {
       return body
     })
     .then(body => {
+      console.log(body)
       return upsertTeam(body)
     })
     .then(team => {

@@ -5,6 +5,8 @@ const add_throwdown_category = require('./add_throwdown_category')
 const add_category_branch = require('./add_category_branch')
 const set_throwdown_start_date = require('./set_throwdown_start_date')
 const throwdown_action = require('./throwdown_action')
+const send_invite = require('./send_invite')
+
 
 
 module.exports = (req, res) => {
@@ -18,5 +20,6 @@ module.exports = (req, res) => {
     add_category_branch: () => add_category_branch(payload, action, res),
     set_throwdown_start_date: () => set_throwdown_start_date(payload, action, res),
     throwdown_action: () => throwdown_action(payload, action, res),
+    send_invite: () => send_invite(payload, action, res),
   }
 }

@@ -110,8 +110,8 @@ const buttons = (throwdown_id) => {
     },
     invite: {
       text: 'Send Invites',
-      name: 'send_invite',
-      value: val('send_invite'),
+      name: 'send_invite_list',
+      value: val('send_invite_list'),
       type: 'button',
       style: 'primary',
     }

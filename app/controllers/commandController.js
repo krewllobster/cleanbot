@@ -1,6 +1,6 @@
 const { initAuth } = require('../utils')
 const commandList = require('../commands')
-const messageController = require('./messageController')
+const multiMessageController = require('./multiMessageController')
 
 
 module.exports = ({body}, res) => {
@@ -31,7 +31,7 @@ module.exports = ({body}, res) => {
     .then(message => {
       console.log('message to be sent')
       console.log(message)
-      return messageController(message, res)
+      return multiMessageController([message], res)
     })
     .then(response => {
       console.log(response)

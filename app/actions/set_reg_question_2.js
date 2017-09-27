@@ -1,5 +1,5 @@
 const { upsertUser } = require('../db_actions')
-const messageController = require('../controllers/messageController')
+const multiMessageController = require('../controllers/multiMessageController')
 const messageList = require('../messages')
 
 module.exports = (payload, action, res) => {
@@ -22,6 +22,7 @@ module.exports = (payload, action, res) => {
     console.log('user updated with previous question')
     console.log(user)
     const message = {
+      client: 'botClient',
       text: `Awesome, now I know what color your ${user.profile.Desert_Island} should be!`,
       type: 'chat.update',
       message_ts,
@@ -30,10 +31,11 @@ module.exports = (payload, action, res) => {
         messageList.registration_complete()
       ]
     }
-    return message
+
+    return multiMessageController([message], res)
   })
-  .then(message => {
-    return messageController(message, res)
+  .then(response => {
+    console.log('registration complete for ' +  user_id)
   })
   .catch(err => {
     console.log('error setting user question::' + err)

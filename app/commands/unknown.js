@@ -7,6 +7,7 @@ module.exports = (body) => {
     channel_id: body.channel_id,
     user_id: body.user_id,
     type: 'chat.ephemeral',
+    client: 'botClient',
     text: `I don't know how to do that yet`,
     attachments: [
       messageList.registration_complete()

@@ -1,5 +1,5 @@
 const { upsertUser } = require('../db_actions')
-const messageController = require('../controllers/messageController')
+const multiMessageController = require('../controllers/multiMessageController')
 const messageList = require('../messages')
 
 module.exports = (payload, action, res) => {
@@ -18,24 +18,20 @@ module.exports = (payload, action, res) => {
       {'profile.Desert_Island': value}
     }
   )
+
   .then(user => {
-    console.log('user updated with previous question')
-    console.log(user)
-    const message = {
-      text: `Awesome, now I know what to airdrop you when (...I mean, if) you're stuck alone on a desert island!`,
+    console.log(`${user} desert island set to ${value}`)
+    let repl_message = {
+      client: 'botClient',
       type: 'chat.update',
+      text: `Great! Now I know what to send you when (...if) you're stranded on a desert island!`,
       message_ts,
       channel_id,
       attachments: []
     }
-    return message
-  })
-  .then(message => {
-    return messageController(message, res)
-  })
-  .then(response => {
-    console.log(response)
-    const message = {
+
+    let new_message = {
+      client: 'botClient',
       type: 'chat.message',
       text: 'One last personal question:',
       channel_id,
@@ -43,13 +39,14 @@ module.exports = (payload, action, res) => {
         messageList.reg_question_2()
       ]
     }
-    return messageController(message, res)
+
+    return multiMessageController([repl_message, new_message], res)
   })
   .then(response => {
-    console.log(response)
+    console.log('message replaced, and new message sent')
   })
   .catch(err => {
-    console.log('error setting user question::' + err)
+    console.log('error setting desert island question::' + err)
     return err
   })
 }

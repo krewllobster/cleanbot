@@ -26,9 +26,6 @@ app.use(express.static(__dirname + '/public'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
-//modify res to give access to redux store,
-//dispatch, and web/bot slack clients
-app.use(storeCreate())
 
 //view engine
 app.set('view engine', 'ejs')

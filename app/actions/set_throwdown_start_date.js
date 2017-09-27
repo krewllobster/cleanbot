@@ -1,4 +1,4 @@
-const messageController = require('../controllers/messageController')
+const multiMessageController = require('../controllers/multiMessageController')
 const messageList = require('../messages')
 const {
   upsertThrowdown,
@@ -25,21 +25,6 @@ module.exports = (payload, action, res) => {
     {$set: {start_date: new Date(date)}}
   )
     .then(throwdown => {
-      console.log('setting privacy*****************')
-      return createPublicChannel(res.webClient, team_id, throwdown.name, user_id)
-        .then(channel => {
-          console.log('channel created++++++++')
-          console.log(channel)
-          return upsertThrowdown({_id: throwdown._id}, {channel: {id: channel.id, name: channel.name}})
-        })
-        .then(throwdown => {
-          return throwdown
-        })
-        .catch(err => {
-          return err
-        })
-    })
-    .then(throwdown => {
       return upsertUser(
         {user_id, team_id},
         {$push: {throwdowns: throwdown._id}}
@@ -51,8 +36,8 @@ module.exports = (payload, action, res) => {
     })
     .then(throwdown => {
       console.log('throwdown found')
-      console.log(throwdown)
       const completed_message = {
+        client: 'botClient',
         message_ts,
         channel_id,
         type: 'chat.update',
@@ -62,17 +47,7 @@ module.exports = (payload, action, res) => {
         ]
       }
 
-      const public_message = {
-        type: 'chat.message',
-        channel_id: throwdown.channel.id,
-        text: `Welcome to throwdown "${throwdown.name}"!\nOn ${moment(throwdown.start_date).format('ddd, MMM Do')} I'll ask the first question!`,
-        attachments: []
-      }
-
-      const completed = messageController(completed_message, res)
-      const public = messageController(public_message, res)
-
-      return Promise.all([completed, public])
+      return multiMessageController([completed_message], res)
     })
     .then(response => {
       console.log(response)

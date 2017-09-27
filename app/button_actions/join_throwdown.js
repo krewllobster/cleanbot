@@ -1,42 +1,39 @@
 const { User, Throwdown } = require('../models')
-const messageController = require('../controllers/messageController')
+const { fundFullThrowdown, upsertThrowdown } = require('../db_actions')
+const { all_public_throwdowns } = require('../messages')
+const multiMessageController = require('../controllers/multiMessageController')
 
 module.exports = ({
   message_ts,
   user_id,
   team_id,
   channel_id,
-  throwdown_id
+  throwdown_id,
+  original_message,
 }, res) => {
 
-  const user = User.findOneAndUpdate(
-    {user_id, team_id},
-    {$push: {throwdowns: throwdown_id}}
-  )
-
-  const channel = User.findOne({user_id, team_id})
+  User.findOne({user_id, team_id})
     .then(user => {
-      return Throwdown.findOneAndUpdate(
+      return upsertThrowdown(
         {_id: throwdown_id},
         {$push: {participants: user._id}}
       )
     })
-    .then(throwdown => throwdown.channel)
-    .catch(err => err)
-
-  Promise.all([user, channel])
-    .then(([user, channel]) => {
-      res.webClient.conversations.invite(channel.id, user.user_id)
+    .then(throwdown => {
+      return all_public_throwdowns({user_id, team_id})
+    })
+    .then(attachments => {
 
       const repl_message = {
         type: 'chat.update',
-        text: 'Throwdown joined. You should see an invite!',
+        client: 'botClient',
+        text: 'Public Throwdowns',
         message_ts,
         channel_id,
-        attachments: []
+        attachments
       }
 
-      return messageController(repl_message, res)
+      return multiMessageController([repl_message], res)
     })
     .then(response => console.log(response))
     .catch(err => {
