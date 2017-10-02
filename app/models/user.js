@@ -7,8 +7,10 @@ const userSchema = new mongoose.Schema({
   throwdowns: [{type: mongoose.Schema.Types.ObjectId, ref: 'Throwdown'}],
   opt_in: {type: Boolean, default: true},
   profile: {
-    "Desert_Island": String,
-    "Favorite_Color": String,
+    fav_color: String,
+    siblings: String,
+    island: String,
+    birthday_present: String,
   }
 })
 

@@ -12,9 +12,16 @@ module.exports = (messages, res) => {
       text,
       attachments,
       message_ts,
+      dialog,
+      trigger_id,
     } = m
 
     switch (type) {
+      case 'dialog.open':
+        promises.push(
+          res[client].dialog.open(dialog, trigger_id)
+        )
+        break
       case 'chat.dm':
         promises.push(
           res.botClient.conversations.open({users: user_id})
