@@ -1,6 +1,7 @@
 
 module.exports = (messages, res) => {
-
+  console.log('sending messages now')
+  console.log('messages to send: ' + messages.length)
   let promises = []
 
   messages.forEach(m => {
@@ -16,6 +17,8 @@ module.exports = (messages, res) => {
       trigger_id,
     } = m
 
+    console.log(m)
+
     switch (type) {
       case 'dialog.open':
         promises.push(
@@ -25,7 +28,9 @@ module.exports = (messages, res) => {
       case 'chat.dm':
         promises.push(
           res.botClient.conversations.open({users: user_id})
-            .then(({channel}) => {
+            .then((response) => {
+              console.log(response)
+              const {channel} = response
               res[client].chat.postMessage(channel.id, text, {attachments})
             })
         )

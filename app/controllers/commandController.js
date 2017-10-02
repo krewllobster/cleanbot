@@ -1,22 +1,13 @@
 const { initAuth } = require('../utils')
-const commandList = require('../commands')
+const commands = require('../commands')
 const multiMessageController = require('./multiMessageController')
 
 
 module.exports = ({body}, res) => {
 
-  let name = body.text.match(/new throwdown (.+)/)
-  if (name) {
-    body.text = 'new throwdown'
-    body.name = name[1]
-  }
-
-  const commands = commandList()
-
   shortAuth(body, res)
     .then(messageSent => {
-      console.log('command controller reached')
-      console.log(body)
+      console.log('command controller reached with ' + body.text)
 
       res.status(200).end()
       if (messageSent) return Promise.reject('Message already sent' + messagesent)
