@@ -5,6 +5,9 @@ const sendMessage = require('../controllers/multiMessageController')
 module.exports = (payload, submission, res) => {
   const {team: {id: team_id}, user: {id: user_id}} = payload
 
+  console.log(payload)
+  console.log(submission)
+
   upsertUser(
     {team_id, user_id},
     {$set: {

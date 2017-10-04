@@ -1,11 +1,6 @@
-const Team      = require('./team')
-const Throwdown = require('./throwdown')
-const User      = require('./user')
-const Category  = require('./category')
-
 module.exports = {
-  Team,
-  Throwdown,
-  User,
-  Category,
+  Team: require('./team'),
+  Throwdown: require('./throwdown'),
+  User: require('./user'),
+  Category: require('./category'),
 }

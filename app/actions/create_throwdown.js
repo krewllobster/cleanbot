@@ -39,7 +39,13 @@ module.exports = (payload, submission, res) => {
       return upsertThrowdown(
         {team_id, name},
         {
-          $set: {name, created_by: user._id, description, start_date: new Date(start_date)},
+          $set: {
+            privacy,
+            name,
+            created_by: user._id,
+            description,
+            start_date: new Date(start_date)
+          },
           $push: {participants: user._id, categories: category},
         }
       )
@@ -52,11 +58,17 @@ module.exports = (payload, submission, res) => {
       const message = {
         type: 'chat.dm',
         client: 'botClient',
-        text: 'Congratulations, you have a new Throwdown',
+        text: 'Congratulations, your Throwdown is now set up!',
         user_id,
         attachments: [
           messageList.single_throwdown(throwdown, user_id)
         ]
+      }
+
+      if (throwdown.privacy === 'private') {
+        message.text += `\nYou can invite people using the button below.`
+      } else if (throwdown.privacy === 'public') {
+        message.text += `\nYour throwdown now shows up for anyone to join.`
       }
 
       return sendMessage([message], res)

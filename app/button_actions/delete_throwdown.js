@@ -31,7 +31,7 @@ module.exports = ({
         client: 'botClient',
         message_ts,
         channel_id,
-        text: 'This throwdown has been deleted',
+        text: `Throwdown "${throwdownToDelete.name}" has been deleted`,
         attachments: []
       }
       messages.push(repl_message)

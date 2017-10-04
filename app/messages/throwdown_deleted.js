@@ -5,8 +5,8 @@ module.exports = (throwdown) => {
     title: `Throwdown "${throwdown.name}" has been deleted by <@${throwdown.created_by.user_id}|${throwdown.created_by.user_name}>`,
     fields: [
       {
-        title: 'Now what?',
-        value: `Message about what to do next here`
+        title: 'What does this mean?',
+        value: `The creator of this Throwdown chose to delete it.\nWhether or not the Throwdown started, your stats wont be affected!`
       }
     ],
     fallback: `Throwdown "${throwdown.name} has been deleted."`,

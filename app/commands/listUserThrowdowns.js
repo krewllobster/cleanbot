@@ -15,6 +15,10 @@ module.exports = (body) => {
         text: 'Your Throwdowns',
         attachments
       }
+
+      if (attachments.length === 0) {
+        message.text = 'You are not a participant in any Throwdowns at the moment.'
+      }
       return message
     })
     .catch(err => err)

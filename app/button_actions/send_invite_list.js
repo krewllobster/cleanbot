@@ -19,7 +19,7 @@ module.exports = ({
         user_id,
         channel_id,
         text: `Invite a user to Throwdown "${throwdown.name}"`,
-        attachments: [attachment]
+        attachments: attachment
       }
 
       return multiMessageController([message], res)

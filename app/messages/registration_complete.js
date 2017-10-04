@@ -6,7 +6,7 @@ module.exports = () => {
     fields: [
       {
         title: 'Create a new throwdown:',
-        value: '/rumble new throwdown <name>'
+        value: `"/rumble new" or "/rumble new throwdown"`
       },
       {
         title: 'View public throwdowns:',

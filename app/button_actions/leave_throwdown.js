@@ -1,6 +1,6 @@
 const { User, Throwdown } = require('../models')
 const { upsertThrowdown } = require('../db_actions')
-const messageController = require('../controllers/messageController')
+const { multiMessageController } = require('../controllers')
 
 module.exports = ({
   message_ts,
@@ -22,7 +22,7 @@ module.exports = ({
         attachments: []
       }
 
-      return messageController(repl_message, res)
+      return multiMessageController([repl_message], res)
     })
     .then(response => console.log(response))
     .catch(err => {
