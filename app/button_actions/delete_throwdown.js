@@ -7,7 +7,7 @@ const {
 
 const { archiveChannel } = require('../utils')
 
-module.exports = ({
+module.exports = async ({
   message_ts,
   user_id,
   team_id,
@@ -15,47 +15,46 @@ module.exports = ({
   throwdown_id
 }, res) => {
 
-  let throwdownToDelete
+  const throwdownToDelete = await findFullThrowdown({_id: throwdown_id})
 
-  findFullThrowdown({_id: throwdown_id})
-    .then(throwdown => {
-      console.log('setting variable to throwdown')
-      throwdownToDelete = throwdown
-      console.log(throwdownToDelete)
-      return deleteThrowdown({_id: throwdown_id})
-    })
-    .then(() => {
-      let messages = []
-      const repl_message = {
-        type: 'chat.update',
-        client: 'botClient',
-        message_ts,
-        channel_id,
-        text: `Throwdown "${throwdownToDelete.name}" has been deleted`,
-        attachments: []
-      }
-      messages.push(repl_message)
+  let messages = []
 
-      throwdownToDelete.participants.forEach(p => {
-        const message = {
-          user_id: p.user_id,
-          team_id,
-          channel_id,
+  if(!throwdownToDelete) {
+    const err_message = {
+      type: 'chat.update',
+      client: 'botClient',
+      message_ts,
+      channel_id,
+      text: `It looks like this Throwdown was already deleted.`,
+      attachments: []
+    }
+    messages.push(err_message)
+  } else {
+    const deleteResponse = await deleteThrowdown({_id: throwdown_id})
+
+    const repl_message = {
+      type: 'chat.update',
+      client: 'botClient',
+      message_ts,
+      channel_id,
+      text: `Throwdown "${throwdownToDelete.name}" has been deleted.`
+    }
+
+    messages.push(repl_message)
+
+    throwdownToDelete.participants.forEach(p => {
+      if (p.opt_in && p.user_id !== user_id) {
+        messages.push({
           type: 'chat.dm',
           client: 'botClient',
+          user_id: p.user_id,
           attachments: [
             messageList.throwdown_deleted(throwdownToDelete)
           ]
-        }
-        if (p.opt_in && p.user_id !== user_id) messages.push(message)
-      })
-      return multiMessageController(messages, res)
+        })
+      }
     })
-    .then(results => {
-      console.log('messages sent to participants')
-      console.log(results)
-    })
-    .catch(err => {
-      console.log('error deleting throwdown and sending messages to participants::' + err)
-    })
+  }
+
+  multiMessageController(messages, res)
 }

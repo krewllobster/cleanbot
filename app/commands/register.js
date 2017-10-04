@@ -1,7 +1,7 @@
 const dialogs = require('../dialogs')
 const multiMessageController = require('../controllers/multiMessageController')
 
-module.exports = (body, res) => {
+module.exports = async (body, res) => {
 
   const {name, team_id, channel_id, user_name, user_id, trigger_id} = body
 
@@ -9,33 +9,24 @@ module.exports = (body, res) => {
     type: 'chat.dm',
     client: 'botClient',
     user_id,
-    text: 'Processing...'
+    text: 'Processing new registration...'
   }
 
-  multiMessageController([processing], res)
-    .then(([response]) => {
+  const [{channel, ts}] = await multiMessageController([processing], res)
 
-      const delete_message = {
-        type: 'chat.delete',
-        client: 'botClient',
-        message_ts: response.ts,
-        channel_id: response.channel
-      }
+  const delete_message = {
+    type: 'chat.delete',
+    client: 'botClient',
+    message_ts: ts,
+    channel_id: channel
+  }
 
-      const dialog = {
-        type: 'dialog.open',
-        client: 'webClient',
-        trigger_id,
-        dialog: dialogs.registration(),
-      }
+  const dialog = {
+    type: 'dialog.open',
+    client: 'webClient',
+    trigger_id,
+    dialog: dialogs.registration(),
+  }
 
-      return multiMessageController([delete_message, dialog], res)
-    })
-    .then(responses => {
-      console.log(responses)
-    })
-    .catch(err => {
-      console.log('error in register command::' + err)
-      return err
-    })
+  multiMessageController([delete_message, dialog], res)
 }

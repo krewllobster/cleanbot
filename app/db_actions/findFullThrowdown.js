@@ -8,7 +8,6 @@ module.exports = (matchFields) => {
     .populate('categories')
     .exec()
     .then(throwdown => {
-      console.log(throwdown)
       return throwdown
     })
     .catch(err => {

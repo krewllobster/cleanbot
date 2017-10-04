@@ -6,12 +6,12 @@ module.exports = ({user_id, team_id}) => {
     .populate('created_by')
     .populate('participants')
     .populate('categories')
+    .populate('invitees')
     .exec()
-    .catch(err => {
-      return err
-    })
     .then(throwdowns => {
       let attachments = []
+      console.log('throwdown list length ++++++++++')
+      console.log(throwdowns.length)
       throwdowns.forEach(td => {
         if(td.privacy === 'public') {
           attachments.push(single_throwdown(td, user_id))

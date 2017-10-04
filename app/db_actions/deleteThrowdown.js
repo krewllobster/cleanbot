@@ -16,7 +16,6 @@ module.exports = (matchFields) => {
     })
     .then(result => {
       console.log('users updated')
-      console.log(result)
       return result
     })
 }

@@ -8,20 +8,13 @@ module.exports = (throwdown, user_id) => {
   const private = throwdown.privacy === 'private'
   const isOwner = throwdown.created_by.user_id === user_id
   const canJoin = !throwdown.participants.some(p => p.user_id === user_id)
-  console.log({
-    started,
-    private,
-    isOwner,
-    canJoin
-  })
+
   let actions = []
 
   if (isOwner && private)   actions.push(buttonList.invite)
   if (isOwner && !canJoin)  actions.push(buttonList.delete)
   if (!isOwner && canJoin)  actions.push(buttonList.join)
   if (!isOwner && !canJoin) actions.push(buttonList.leave)
-
-  console.log(actions)
 
   return {
     title: throwdown.name,
@@ -103,7 +96,7 @@ const buttons = (throwdown_id) => {
       style: 'danger',
       confirm: {
         title: 'Are you sure?',
-        text: 'Deleteing this Throwdown cannot be undone',
+        text: 'Deleting this Throwdown cannot be undone',
         ok_text: 'Yes, delete this Throwdown',
         dismiss_text: 'No, keep this Throwdown',
       },

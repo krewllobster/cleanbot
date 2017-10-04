@@ -10,9 +10,6 @@ module.exports = (payload, action, res) => {
     channel: {id: channel_id}
   } = payload
 
-  console.log(payload)
-  console.log(action)
-
   const { name } = action
 
   let message

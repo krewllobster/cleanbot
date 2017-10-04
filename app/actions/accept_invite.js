@@ -13,7 +13,7 @@ module.exports = (payload, action, res) => {
   }
 }
 
-const accept = (payload, action, res) => {
+const accept = async (payload, action, res) => {
   const {
     user: {id: user_id},
     team: {id: team_id},
@@ -24,49 +24,39 @@ const accept = (payload, action, res) => {
 
   const { throwdown_id, user_to_invite, owner } = JSON.parse(action.value)
 
-  findOneUser({user_id: user_to_invite, team_id})
-    .then(user => {
-      console.log(user)
-      return upsertThrowdown(
-        {_id: throwdown_id},
-        {
-          $push: {participants: user._id},
-          $pull: {invitees: user._id},
-        }
-      )
-    })
-    .then(throwdown => {
-      console.log(throwdown)
-      return findFullThrowdown({_id: throwdown._id})
-    })
-    .then(throwdown => {
-      const congrats_message = {
-        type: 'chat.update',
-        client: 'botClient',
-        message_ts,
-        channel_id,
-        text: `Sweet! You'll get a notification when "${throwdown.name}" starts.`,
-        attachments: [
-          messages.single_throwdown(throwdown, user_to_invite)
-        ]
-      }
+  const user = await findOneUser({user_id: user_to_invite, team_id})
+  const newThrowdown =  await upsertThrowdown(
+                                {_id: throwdown_id},
+                                {
+                                  $push: {participants: user._id},
+                                  $pull: {invitees: user._id},
+                                }
+                              ).then(td => {
+                                return findFullThrowdown({_id: td._id})
+                              })
 
-      const accept_notification = {
-        type: 'chat.dm',
-        client: 'botClient',
-        user_id: owner,
-        text: `<@${user_to_invite}> has accepted your invitation to Throwdown: "${throwdown.name}"`
-      }
+  const congrats_message = {
+    type: 'chat.update',
+    client: 'botClient',
+    message_ts,
+    channel_id,
+    text: `Sweet! You'll get a notification when "${newThrowdown.name}" starts.`,
+    attachments: [
+      messages.single_throwdown(newThrowdown, user_to_invite)
+    ]
+  }
 
-      return multiMessageController([congrats_message, accept_notification], res)
-    })
-    .then(response => console.log(response))
-    .catch(err => {
-      console.log('error sending accept notification::' + err)
-    })
+  const accept_notification = {
+    type: 'chat.dm',
+    client: 'botClient',
+    user_id: owner,
+    text: `<@${user_to_invite}> has accepted your invitation to Throwdown: "${newThrowdown.name}"`
+  }
+
+  multiMessageController([congrats_message, accept_notification], res)
 }
 
-const reject = (payload, action, res) => {
+const reject = async (payload, action, res) => {
   const {
     user: {id: user_id},
     team: {id: team_id},
@@ -77,42 +67,30 @@ const reject = (payload, action, res) => {
 
   const { throwdown_id, user_to_invite, owner } = JSON.parse(action.value)
 
-  findOneUser({user_id: user_to_invite, team_id})
-    .then(user => {
-      console.log(user)
-      return upsertThrowdown(
-        {_id: throwdown_id},
-        {
-          $pull: {invitees: user._id},
-        }
-      )
-    })
-    .then(throwdown => {
-      console.log(throwdown)
-      return findFullThrowdown({_id: throwdown._id})
-    })
-    .then(throwdown => {
-      const reject_message = {
-        type: 'chat.update',
-        client: 'botClient',
-        message_ts,
-        channel_id,
-        text: `Ok, no problem. To receive another invite, send a message to <@${owner}>`,
-        attachments: [],
-        mrkdwn_in: ['text']
-      }
+  const user = await findOneUser({user_id: user_to_invite, team_id})
+  const throwdown =  await upsertThrowdown(
+                                {_id: throwdown_id},
+                                {
+                                  $pull: {invitees: user._id},
+                                }
+                              )
+  const reject_message = {
+    type: 'chat.update',
+    client: 'botClient',
+    message_ts,
+    channel_id,
+    text: `Ok, no problem. To receive another invite, send a message to <@${owner}>`,
+    attachments: [],
+    mrkdwn_in: ['text']
+  }
 
-      const reject_notification = {
-        type: 'chat.dm',
-        client: 'botClient',
-        user_id: owner,
-        text: `<@${user_to_invite}> has rejected your invitation to Throwdown: "${throwdown.name}"`
-      }
+  const reject_notification = {
+    type: 'chat.dm',
+    client: 'botClient',
+    user_id: owner,
+    text: `<@${user_to_invite}> has rejected your invitation to Throwdown: "${throwdown.name}"`
+  }
 
-      return multiMessageController([reject_message, reject_notification], res)
-    })
-    .then(response => console.log(response))
-    .catch(err => {
-      console.log('error sending accept notification::' + err)
-    })
+  multiMessageController([reject_message, reject_notification], res)
+
 }
