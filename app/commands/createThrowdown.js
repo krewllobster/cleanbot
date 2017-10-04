@@ -2,27 +2,46 @@ const { Category } = require('../models')
 
 const messageList = require('../messages')
 const dialogs = require('../dialogs')
+const sendMessage = require('../controllers/multiMessageController')
 
-module.exports = (body) => {
-  const {name, team_id, user_name, user_id, trigger_id} = body
 
-  //error handle for command body
-  if (!team_id || !user_name || !user_id) {
-    return Promise.reject(new Error('missing required field in body'))
+module.exports = (body, res) => {
+  const {name, team_id, channel_id, user_name, user_id, trigger_id} = body
+
+  const processing = {
+    type: 'chat.dm',
+    client: 'botClient',
+    user_id,
+    text: 'Processing...'
   }
 
-  return Category.find({})
-    .then(categories => {
+  let deleteInfo = sendMessage([processing], res)
+  let categories = Category.find({})
+
+  Promise.all([deleteInfo, categories])
+    .then(([[response], categories]) => {
+      const delete_message = {
+        type: 'chat.delete',
+        client: 'botClient',
+        message_ts: response.ts,
+        channel_id: response.channel
+      }
+
       let catList = categories.map(c => {
         return {label: c.name, value: c._id}
       })
 
-      return {
+      const dialog = {
         type: 'dialog.open',
         client: 'botClient',
         trigger_id,
         dialog: dialogs.new_throwdown(catList)
       }
+
+      return sendMessage([delete_message, dialog], res)
+    })
+    .then(responses => {
+      console.log(responses)
     })
     .catch(err => {
       console.log('error in create throwdown command::' + err)

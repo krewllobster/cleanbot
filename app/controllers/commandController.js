@@ -1,7 +1,5 @@
 const { initAuth } = require('../utils')
 const commands = require('../commands')
-const multiMessageController = require('./multiMessageController')
-
 
 module.exports = ({body}, res) => {
 
@@ -13,16 +11,11 @@ module.exports = ({body}, res) => {
       if (messageSent) return Promise.reject('Message already sent' + messagesent)
 
       if (commands.hasOwnProperty(body.text)) {
-        return commands[body.text](body)
+        return commands[body.text](body, res)
       } else {
         console.log('command unknown, returning default')
-        return commands['unknown'](body)
+        return commands['unknown'](body, res)
       }
-    })
-    .then(message => {
-      console.log('message to be sent')
-      console.log(message)
-      return multiMessageController([message], res)
     })
     .then(response => {
       console.log(response)
