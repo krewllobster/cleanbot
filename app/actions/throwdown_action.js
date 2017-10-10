@@ -9,10 +9,10 @@ module.exports = (payload, action, res) => {
     original_message,
   } = payload
 
-  const { throwdown_id, command } = JSON.parse(action.value)
+  const { throwdown_id, command, public } = JSON.parse(action.value)
 
   console.log(command)
 
-  button_actions[command]({message_ts, user_id, team_id, channel_id, throwdown_id}, res)
+  button_actions[command]({message_ts, user_id, team_id, channel_id, throwdown_id, public}, res)
 
 }

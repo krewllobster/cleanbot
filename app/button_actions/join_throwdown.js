@@ -1,42 +1,41 @@
 const { User, Throwdown } = require('../models')
 const { fundFullThrowdown, upsertThrowdown } = require('../db_actions')
-const { all_public_throwdowns } = require('../messages')
+const { all_public_throwdowns, all_user_throwdowns} = require('../messages')
 const multiMessageController = require('../controllers/multiMessageController')
 
-module.exports = ({
+module.exports = async ({
   message_ts,
   user_id,
   team_id,
   channel_id,
   throwdown_id,
-  original_message,
+  public,
 }, res) => {
 
-  User.findOne({user_id, team_id})
-    .then(user => {
-      return upsertThrowdown(
-        {_id: throwdown_id},
-        {$push: {participants: user._id}}
-      )
-    })
-    .then(throwdown => {
-      return all_public_throwdowns({user_id, team_id})
-    })
-    .then(attachments => {
+  const user = await User.findOne({user_id, team_id})
+  const throwdown = await Throwdown.find({_id: throwdown_id})
 
-      const repl_message = {
-        type: 'chat.update',
-        client: 'botClient',
-        text: 'Public Throwdowns',
-        message_ts,
-        channel_id,
-        attachments
-      }
+  const updatedThrowdown = await upsertThrowdown(
+    {_id: throwdown._id},
+    {$push: {participants: user._id}}
+  )
 
-      return multiMessageController([repl_message], res)
-    })
-    .then(response => console.log(response))
-    .catch(err => {
-      console.log('error joining throwdown::' + err)
-    })
+  const confirm_message = {
+    type: 'chat.update',
+    client: 'botClient',
+    message_ts,
+    channel_id,
+  }
+
+  if (public && user && throwdown) {
+    confirm_message.attachments = await all_public_throwdowns({user_id, team_id})
+    confirm_message.text = `You joined Throwdown "${throwdown.name}"\nPublic Throwdowns:`
+  } else if (!public && user && throwdown) {
+    confirm_message.attachments = await all_user_throwdowns({user_id, team_id})
+    confirm_message.text = `You joined Throwdown "${throwdown.name}"\nYour Throwdowns:`
+  } else if (!user || !throwdown) {
+    confirm_message.text = `Something has changed since this message was sent. Please refresh with a new "/rumble" command.`
+  }
+
+  multiMessageController([confirm_message], res)
 }

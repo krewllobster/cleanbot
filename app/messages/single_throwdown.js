@@ -1,8 +1,8 @@
 const moment = require('moment')
 
-module.exports = (throwdown, user_id) => {
+module.exports = ({throwdown, user_id, public}) => {
 
-  const buttonList = buttons(throwdown._id)
+  const buttonList = buttons({throwdown_id: throwdown._id, public})
 
   const started = moment().isSameOrAfter(throwdown.start_date, 'day')
   const private = throwdown.privacy === 'private'
@@ -61,10 +61,11 @@ module.exports = (throwdown, user_id) => {
   }
 }
 
-const buttons = (throwdown_id) => {
+const buttons = ({throwdown_id, public}) => {
   const val = (command) => JSON.stringify({
     throwdown_id,
     command,
+    public,
   })
 
   return {

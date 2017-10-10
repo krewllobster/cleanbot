@@ -1,5 +1,9 @@
 const multiMessageController = require('../controllers/multiMessageController')
-const messageList = require('../messages')
+const {
+  throwdown_deleted,
+  all_public_throwdowns,
+  all_user_throwdowns
+} = require('../messages')
 const {
   deleteThrowdown,
   findFullThrowdown
@@ -12,7 +16,8 @@ module.exports = async ({
   user_id,
   team_id,
   channel_id,
-  throwdown_id
+  throwdown_id,
+  public
 }, res) => {
 
   const throwdownToDelete = await findFullThrowdown({_id: throwdown_id})
@@ -40,6 +45,12 @@ module.exports = async ({
       text: `Throwdown "${throwdownToDelete.name}" has been deleted.`
     }
 
+    if(public) {
+      repl_message.attachments = await all_public_throwdowns({user_id, team_id})
+    } else {
+      repl_message.attachments = await all_user_throwdowns({user_id, team_id})
+    }
+
     messages.push(repl_message)
 
     throwdownToDelete.participants.forEach(p => {
@@ -49,7 +60,7 @@ module.exports = async ({
           client: 'botClient',
           user_id: p.user_id,
           attachments: [
-            messageList.throwdown_deleted(throwdownToDelete)
+            throwdown_deleted(throwdownToDelete)
           ]
         })
       }

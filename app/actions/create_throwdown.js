@@ -46,7 +46,7 @@ module.exports = async (payload, submission, res) => {
   }
 
   if (created) {
-    const fullThrowdown = await findFullThrowdown({_id: doc._id})
+    const throwdown = await findFullThrowdown({_id: doc._id})
 
     const message = {
       type: 'chat.update',
@@ -54,12 +54,12 @@ module.exports = async (payload, submission, res) => {
       text: 'Congratulations, your Throwdown is now set up!',
       channel_id: channel,
       message_ts: ts,
-      attachments: [messageList.single_throwdown(fullThrowdown, user_id)]
+      attachments: [messageList.single_throwdown({throwdown, user_id, public: false})]
     }
 
-    if (fullThrowdown.privacy === 'private') {
+    if (throwdown.privacy === 'private') {
       message.text += ` You can invite people using the button below.`
-    } else if (fullThrowdown.privacy === 'public') {
+    } else if (throwdown.privacy === 'public') {
       message.text += ` Your throwdown now shows up for anyone to join.`
     }
 
