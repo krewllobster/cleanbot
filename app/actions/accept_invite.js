@@ -23,7 +23,6 @@ const accept = async (payload, action, res) => {
   } = payload
 
   const { throwdown_id, user_to_invite, owner } = JSON.parse(action.value)
-
   const user = await findOneUser({user_id: user_to_invite, team_id})
   const newThrowdown =  await upsertThrowdown(
                                 {_id: throwdown_id},
@@ -32,6 +31,7 @@ const accept = async (payload, action, res) => {
                                   $pull: {invitees: user._id},
                                 }
                               ).then(td => {
+                                console.log(td)
                                 return findFullThrowdown({_id: td._id})
                               })
 
@@ -42,10 +42,9 @@ const accept = async (payload, action, res) => {
     channel_id,
     text: `Sweet! You'll get a notification when "${newThrowdown.name}" starts.`,
     attachments: [
-      messages.single_throwdown(newThrowdown, user_to_invite)
+      messages.single_throwdown({throwdown: newThrowdown, user_id: user_to_invite})
     ]
   }
-
   const accept_notification = {
     type: 'chat.dm',
     client: 'botClient',

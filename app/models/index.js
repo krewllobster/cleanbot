@@ -3,4 +3,5 @@ module.exports = {
   Throwdown: require('./throwdown'),
   User: require('./user'),
   Category: require('./category'),
+  Question: require('./question'),
 }

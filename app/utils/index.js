@@ -1,11 +1,8 @@
-const verifyToken = require('./verifyToken')
-const checkOpt = require('./checkOpt')
-const initAuth = require('./initAuth')
-const archiveChannel = require('./archiveChannel')
-
 module.exports = {
-  verifyToken,
-  checkOpt,
-  initAuth,
-  archiveChannel,
+  verifyToken: require('./verifyToken'),
+  checkOpt: require('./checkOpt'),
+  initAuth: require('./initAuth'),
+  archiveChannel: require('./archiveChannel'),
+  createJob: require('./createJob'),
+  defineJobs: require('./defineJobs')
 }

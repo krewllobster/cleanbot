@@ -7,13 +7,13 @@ const mongoose        = require('mongoose')
 const express         = require('express')
 const ejs             = require('ejs')
 const storeCreate     = require('./store')
+const Agenda          = require('agenda')
+const { defineJobs }  = require('./app/utils')
+
+
 
 //configure Mongoose
 mongoose.Promise = global.Promise
-
-const db = mongoose.connect(process.env.MONGO_URL, {
-  useMongoClient: true
-})
 
 //app setup
 const app    = express()

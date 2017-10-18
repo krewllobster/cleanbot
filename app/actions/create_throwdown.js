@@ -1,7 +1,9 @@
 const { upsertThrowdown, findFullThrowdown } = require('../db_actions')
 const { User, Throwdown } = require('../models')
-const messageList = require('../messages')
-const sendMessage = require('../controllers/multiMessageController')
+const messageList         = require('../messages')
+const sendMessage         = require('../controllers/multiMessageController')
+const agenda              = require('../jobs/jobs')
+
 
 module.exports = async (payload, submission, res) => {
 
@@ -47,6 +49,10 @@ module.exports = async (payload, submission, res) => {
 
   if (created) {
     const throwdown = await findFullThrowdown({_id: doc._id})
+
+    const channel_job = agenda.create('open channel', {throwdown_id: throwdown._id})
+    channel_job.schedule(new Date(throwdown.start_date))
+    channel_job.save()
 
     const message = {
       type: 'chat.update',

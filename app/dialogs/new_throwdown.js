@@ -3,19 +3,28 @@ const moment = require('moment')
 module.exports = (categories) => {
   let dates = []
 
-  for (i = 1; i < 8; i++) {
-    let d = moment().add(i, 'days')
-    console.log(i, d.format('MMM Do'))
-    if (d.format('e') === '0' || d.format('e') === '6') {
-      console.log('weekend')
-    } else {
-      let date = {
-        label: d.format('ddd, MMM Do'),
-        value: d
-      }
-      dates.push(date)
+  //minutes
+  for (i = 1; i < 5; i++) {
+    let d = moment().add(i*10, 'seconds')
+    let date = {
+      label: `${i*10} seconds from now`,
+      value: d
     }
+    dates.push(date)
   }
+
+  //use days
+  // for (i = 1; i < 8; i++) {
+  //   let d = moment().add(i, 'days')
+  //   console.log(i, d.format('MMM Do'))
+  //   if (d.format('e') !== '0' && d.format('e') !== '6') {
+  //     let date = {
+  //       label: d.format('ddd, MMM Do'),
+  //       value: d
+  //     }
+  //     dates.push(date)
+  //   }
+  // }
 
   return JSON.stringify({
     "callback_id": "create_throwdown",
