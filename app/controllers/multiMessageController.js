@@ -2,7 +2,6 @@
 module.exports = (messages, res) => {
   console.log('sending messages now')
   console.log('messages to send: ' + messages.length)
-  console.log(messages)
   let promises = []
 
   messages.forEach(m => {
@@ -18,7 +17,6 @@ module.exports = (messages, res) => {
       trigger_id,
     } = m
 
-    console.log(m)
 
     switch (type) {
       case 'dialog.open':
@@ -64,12 +62,7 @@ module.exports = (messages, res) => {
     }
   })
 
-  return Promise.all(promises)
-    .then(responses => {
-      console.log('responses')
-      console.log(responses)
-      return responses
-    })
+  Promise.all(promises)
     .catch(errors => {
       console.log(errors)
     })

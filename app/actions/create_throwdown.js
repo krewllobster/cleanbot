@@ -3,6 +3,7 @@ const { User, Throwdown } = require('../models')
 const messageList         = require('../messages')
 const sendMessage         = require('../controllers/multiMessageController')
 const agenda              = require('../jobs/jobs')
+const { loadingMessage, to }  = require('../utils')
 
 
 module.exports = async (payload, submission, res) => {
@@ -16,13 +17,12 @@ module.exports = async (payload, submission, res) => {
   const {name, description, category, privacy, start_date} = submission
 
   const processing = {
-    type: 'chat.dm',
-    client: 'botClient',
+    client: res.botClient,
     user_id,
     text: 'Creating your throwdown...'
   }
 
-  const [{channel, ts}] = await sendMessage([processing], res)
+  const {channel, ts} = await loadingMessage(processing)
 
   const user = await User.findOne({team_id, user_id})
 

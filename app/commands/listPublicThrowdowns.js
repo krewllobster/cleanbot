@@ -1,18 +1,18 @@
 const { User, Throwdown } = require('../models')
 const { all_public_throwdowns } = require('../messages')
 const multiMessageController = require('../controllers/multiMessageController')
+const { loadingMessage } = require('../utils')
 
 module.exports = async (body, res) => {
   const {name, team_id, user_name, user_id, channel_id} = body
 
   const processing = {
-    type: 'chat.dm',
-    client: 'botClient',
+    client: res.botClient,
     user_id,
     text: 'Fetching public Throwdowns...'
   }
 
-  const [{channel, ts}] = await multiMessageController([processing], res)
+  const {channel, ts} = await loadingMessage(processing)
 
   const attachments = await all_public_throwdowns({team_id, user_id})
 

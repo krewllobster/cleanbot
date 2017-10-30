@@ -1,62 +1,27 @@
-const { initAuth } = require('../utils')
+const { verToken, checkUser, to } = require('../utils')
 const commands = require('../commands')
 
-module.exports = ({body}, res) => {
+module.exports = async ({body}, res) => {
+  const verified = verToken(body.token)
 
-  shortAuth(body, res)
-    .then(messageSent => {
-      console.log('command controller reached with ' + body.text)
+  if(!verified) {
+    throw new Error('token does not match, invalid request')
+  }
+  //end with 200 here to let slack client know command received
+  res.status(200).end()
 
-      res.status(200).end()
-      if (messageSent) return Promise.reject('Message already sent' + messagesent)
+  const user = await checkUser(body, res.botClient)
 
-      if (commands.hasOwnProperty(body.text)) {
-        return commands[body.text](body, res)
-      } else {
-        console.log('command unknown, returning default')
-        return commands['unknown'](body, res)
-      }
-    })
-    .then(response => {
-      console.log(response)
-    })
-    .catch(err => {
-      console.log('error in command controller::' + err)
-      res.status(500).end()
-    })
-}
+  if(!user) {
+    throw new Error('user not found or not created')
+  }
 
-const shortAuth = (body, res) => {
-  const noRegCommands = ['', 'help', 'register']
-
-  return initAuth(body)
-    .then(auth => {
-      if (!auth) {
-        res.status(500).end()
-        return new Error('Token invalid')
-      }
-      console.log(auth)
-      return auth
-    })
-    .then(({registered, opt_in}) => {
-      if(registered) {
-        if (opt_in || body.text === 'opt in') {
-          return false
-        } else {
-          res.end(`You've opted out of /rumble notifications`)
-          return true
-        }
-      } else {
-        if (noRegCommands.includes(body.text)) {
-          return false
-        } else {
-          res.end(`Look's like you havn't registered yet!`)
-          return true
-        }
-      }
-    })
-    .catch(err => {
-      console.log('error in init auth or command body parsing::' + err)
-      res.status(500).end()
-    })
+  if (commands.hasOwnProperty(body.text)) {
+    [err, response] = await to(commands[body.text](body, res))
+  } else {
+    [err, response] = await to(commands['unknown'](body, res))
+  }
+  if (err) {
+    console.log(err)
+  }
 }

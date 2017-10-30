@@ -4,5 +4,9 @@ module.exports = {
   initAuth: require('./initAuth'),
   archiveChannel: require('./archiveChannel'),
   createJob: require('./createJob'),
-  defineJobs: require('./defineJobs')
+  defineJobs: require('./defineJobs'),
+  to: require('./to'),
+  verToken: require('./verToken'),
+  checkUser: require('./checkUser'),
+  loadingMessage: require('./loadingMessage')
 }

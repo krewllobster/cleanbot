@@ -18,10 +18,4 @@ module.exports = (body, res) => {
   }
 
   multiMessageController([message], res)
-    .then(responses => {
-      console.log(responses)
-    })
-    .catch(err => {
-      console.log(err)
-    })
 }
