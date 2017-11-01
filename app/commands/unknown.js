@@ -1,21 +1,31 @@
-const messageList = require('../messages')
-const multiMessageController = require('../controllers/multiMessageController')
 
+module.exports = async (body, deps) => {
+  const {slack, commandFactory, exec} = deps
+  const {channel_id} = body
 
-module.exports = (body, res) => {
-  console.log('unknown command: ' + body.text)
+  const unknownMessage = commandFactory('slack').setOperation('basicMessage')
+    .setText(`I'm not sure how to "${body.text}" yet`)
+    .setChannel(channel_id).setAttachments([tryAgain]).save()
 
-  const {name, team_id, user_name, user_id, channel_id} = body
+  const response = await exec.one(slack, unknownMessage)
+}
 
-  const message = {
-    type: 'chat.dm',
-    client: 'botClient',
-    text: `I'm  not sure how to do "${body.text}" yet!`,
-    user_id,
-    attachments: [
-      messageList.registration_complete()
-    ]
-  }
-
-  multiMessageController([message], res)
+const tryAgain = {
+  title: "Try out some commands I know!",
+  fields: [
+    {
+      title: 'Create a new throwdown:',
+      value: `"/rumble new" or "/rumble new throwdown"`
+    },
+    {
+      title: 'View public throwdowns:',
+      value: '"/rumble list throwdowns" or "/rumble list"'
+    },
+    {
+      title: `View throwdowns you're a part of:`,
+      value: '"/rumble my throwdowns"'
+    }
+  ],
+  fallback: "Unknown Command",
+  attachment_type: "default",
 }

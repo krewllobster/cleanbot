@@ -1,33 +1,37 @@
-const { User, Throwdown } = require('../models')
-const { all_public_throwdowns } = require('../messages')
-const multiMessageController = require('../controllers/multiMessageController')
-const { loadingMessage } = require('../utils')
+const processingMessage  = require('../common').processing
+const {single_throwdown} = require('../messages')
 
-module.exports = async (body, res) => {
+module.exports = async (body, deps) => {
+  const {slack, dbInterface, commandFactory, exec, user} = deps
   const {name, team_id, user_name, user_id, channel_id} = body
 
-  const processing = {
-    client: res.botClient,
-    user_id,
-    text: 'Fetching public Throwdowns...'
-  }
+  const processing = processingMessage(deps, {
+    text: 'Fetching list of public Throwdowns',
+    user_id
+  })
 
-  const {channel, ts} = await loadingMessage(processing)
+  const {channel} = await processing.next().value
+  const {ts} = await processing.next(channel).value
 
-  const attachments = await all_public_throwdowns({team_id, user_id})
+  const findAllThrowdowns =
+    commandFactory('db').setEntity('Throwdown').setOperation('find')
+      .setMatch({team_id, privacy: 'public'}).setPopulate([
+        {path: 'created_by', model: 'User'}, {path: 'participants', model: 'User'},
+        {path: 'invitees', model: 'User'}, {path: 'categories', model: 'Category'}
+      ]).save()
 
-  const message = {
-    type: 'chat.update',
-    client: 'botClient',
-    channel_id: channel,
-    message_ts: ts,
-    text: 'Public Throwdowns',
-    attachments
-  }
+  const throwdowns = await exec.one(dbInterface, findAllThrowdowns)
+  const attachments = throwdowns.map(throwdown => {
+    return single_throwdown({throwdown, user_id, public: true})
+  })
+  const messageWithList =
+    commandFactory('slack').setOperation('updateMessage')
+      .setTs(ts).setChannel(channel.id).setText('Public Throwdowns')
+      .setAttachments(attachments).save()
 
   if (attachments.length < 1) {
-    message.text = `It looks like there aren't any public Throwdowns yet!`
+    messageWithList.text = `It looks like there aren't any public Throwdowns yet!`
   }
 
-  multiMessageController([message], res)
+  const response = await exec.one(slack, messageWithList)
 }

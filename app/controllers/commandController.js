@@ -1,27 +1,33 @@
-const { verToken, checkUser, to } = require('../utils')
 const commands = require('../commands')
+const {initUser} = require('../common')
+
+const {
+  commandFactory,
+  dbInterface,
+  slackApi,
+  exec
+} = require('../domains')
 
 module.exports = async ({body}, res) => {
-  const verified = verToken(body.token)
 
-  if(!verified) {
-    throw new Error('token does not match, invalid request')
+  const errorHandle = (err) => {
+    throw new Error('error in Command Controller::' + err)
   }
-  //end with 200 here to let slack client know command received
-  res.status(200).end()
 
-  const user = await checkUser(body, res.botClient)
-
-  if(!user) {
-    throw new Error('user not found or not created')
+  let domains = {
+    commandFactory,
+    dbInterface,
+    exec,
+    slackApi
   }
+
+  const deps = await initUser(body, res, domains).catch(errorHandle)
 
   if (commands.hasOwnProperty(body.text)) {
-    [err, response] = await to(commands[body.text](body, res))
+    console.log(`passing control to command: "${body.text}"`)
+    await commands[body.text](body, deps).catch(errorHandle)
   } else {
-    [err, response] = await to(commands['unknown'](body, res))
-  }
-  if (err) {
-    console.log(err)
+    console.log(`unknown command: "${body.text}"`)
+    await commands['unknown'](body, deps).catch(errorHandle)
   }
 }

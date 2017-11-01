@@ -1,30 +1,34 @@
 const createCommand = (type) => {
-  const command = {}
+  const command = {
+    client: 'botClient'
+  }
+
+  const methodObject = {}
+
   let methods
   switch(type) {
     case 'slack':
-      methods = ['Operation', 'Users', 'User', 'Channel', 'Text', 'Attachments']
+      methods = ['Operation', 'Client', 'Dialog', 'Trigger', 'Users',
+                 'Ts', 'User', 'Channel', 'Text', 'Attachments']
       break
     case 'db':
-      methods = ['Entity', 'Operation', 'Match', 'Update', 'Options']
+      methods = ['Entity', 'Operation', 'Match', 'Update', 'Options', 'Populate']
       break
     default:
       throw new Error('command type not specified')
   }
 
-  const titleCase = (string) => string.charAt(0).toUpperCase() + string.slice(1)
-  const set = (base, add) => Object.assign(base, add)
-
   methods.forEach(m => {
-    command['set' + m] = (value) => {
+    methodObject['set' + m] = (value) => {
       command[m.toLowerCase()] = value
-      return command
+      return methodObject
     }
-    command['get' + m] = () => {
+    methodObject['get' + m] = () => {
       return command[m]
     }
   })
-  return command
+  methodObject.save = () => Object.assign({}, command)
+  return methodObject
 }
 
 module.exports = createCommand

@@ -1,8 +1,11 @@
 const axios          = require('axios')
+const {
+  commandFactory,
+  dbInterface,
+  exec
+} = require('../domains')
 
-const { upsertTeam } = require('../db_actions')
-
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
 
   const auth_code = req.query.code
 
@@ -19,22 +22,25 @@ module.exports = (req, res) => {
     code: auth_code,
   }
 
-  return axios.get(uri, {params})
-    .then(response => {
-      const body = response.data
-      if(!body.ok) {
-        return new Error('Something in auth went wrong')
-      }
-      return body
-    })
-    .then(body => {
-      return upsertTeam(body)
-    })
-    .then(team => {
-      res.redirect('/')
-    })
-    .catch(err => {
-      console.log('auth err::'+err)
-      res.status(500).end
-    })
+  const {data} = await axios.get(uri, {params})
+
+  if(!data.ok) {
+    return new Error('Something in authentication controller went wrong')
+  }
+
+  const upsertTeam =
+    commandFactory('db').setOperation('findOneAndUpdate').setEntity('Team')
+      .setMatch({team_id: data.team_id}).setUpdate(data)
+      .setOptions({upsert: true, new: true}).save()
+
+  const team = await exec.one(dbInterface, upsertTeam)
+    .catch(err => console.log(err))
+
+  if(!team) {
+    console.log('Unable to write team to db')
+    res.status(500).end
+  }
+
+  console.log('installation successful for team: ' + team.team_id)
+  res.redirect('/')
 }

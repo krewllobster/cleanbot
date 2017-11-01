@@ -18,7 +18,7 @@ module.exports = (app) => {
     authController(req, res)
   })
 
-  app.use(storeCreate())
+  // app.use(storeCreate())
 
   app.post('/slack/actions', (req, res) => {
     actionController(req, res)
