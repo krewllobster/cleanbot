@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
     console.log(`calling action ${callback_id}`)
     if(actions.hasOwnProperty(callback_id)) {
       const action = payload.actions[0]
-      actions[callback_id](payload, action, res)
+      actions[callback_id](payload, action, deps)
     } else {
       throw new Error('Action does not exist')
     }

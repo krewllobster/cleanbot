@@ -1,6 +1,8 @@
 
 
 module.exports = (throwdown) => {
+  console.log('in message')
+  console.log(throwdown)
   const participants = throwdown.participants.reduce((acc, p) => {
     return acc + `<@${p.user_id}> `
   }, '')

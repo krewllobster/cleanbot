@@ -1,6 +1,6 @@
 const button_actions = require('../button_actions')
 
-module.exports = (payload, action, res) => {
+module.exports = (payload, action, deps) => {
   const {
     user: {id: user_id},
     team: {id: team_id},
@@ -9,10 +9,12 @@ module.exports = (payload, action, res) => {
     original_message,
   } = payload
 
-  const { throwdown_id, command, public } = JSON.parse(action.value)
+  const { throwdown_id, command: actionName, public } = JSON.parse(action.value)
 
-  console.log(command)
-
-  button_actions[command]({message_ts, user_id, team_id, channel_id, throwdown_id, public}, res)
-
+  console.log('passing to button action: ' + actionName)
+  const data = {
+    message_ts, user_id, team_id, channel_id,
+    throwdown_id, public
+  }
+  button_actions[actionName](data, deps)
 }

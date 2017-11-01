@@ -1,9 +1,7 @@
-const multiMessageController = require('../controllers/multiMessageController')
 const messages = require('../messages')
-const { findOneUser, upsertThrowdown, findFullThrowdown } = require('../db_actions')
-const { checkUser, to } = require('../utils')
+const { findOrCreateUser, findFullThrowdown } = require('../common')
 
-module.exports = async (payload, action, res) => {
+module.exports = async (payload, action, deps) => {
   const {
     user: {id: user_id},
     team: {id: team_id},
@@ -11,83 +9,67 @@ module.exports = async (payload, action, res) => {
     channel: {id: channel_id}
   } = payload
 
-  const throwdown_id = action.name
-  const user_to_invite = await checkUser({
-    user_id: action.selected_options[0].value,
-    team_id
-  }, res.botClient)
+  const {slack, dbInterface, commandFactory, exec, user} = deps
 
-  let throwdown = await findFullThrowdown({_id: throwdown_id})
+  const userInvited = await findOrCreateUser(deps, {team_id, user_id})
+  const throwdown = await findFullThrowdown(deps, {matchFields: {_id: action.name}})
+  console.log('already invited')
 
+  let execList = []
 
-  let messageList = []
+  const basicMessage = commandFactory('slack').setOperation('basicMessage')
+    .setChannel(channel_id)
 
   if (!throwdown) {
-    const no_td_message = {
-      type: 'chat.update',
-      client: 'botClient',
-      message_ts,
-      channel_id,
-      text: `It looks like this Throwdown no longer exists, sorry!`,
-      attachments: []
-    }
+    const noThrowdownMessage =
+      commandFactory('slack').setOperation('updateMessage').setTs(message_ts)
+        .setChannel(channel_id)
+        .setText(`Look's like this Throwdown doesn't exist. Sorry!`).save()
 
-    messageList.push(no_td_message)
+    execList.push([slack, noThrowdownMessage])
   }
 
   if (throwdown) {
-    const hasPart = throwdown.participants.map(p => p.user_id).includes(user_to_invite.user_id)
-    const hasInvt = throwdown.invitees.map(i => i.user_id).includes(user_to_invite.user_id)
+    console.log('has throwdown, continuing')
+    const hasPart = throwdown.participants.map(p => p.user_id).includes(userInvited.user_id)
+    const hasInvt = throwdown.invitees.map(i => i.user_id).includes(userInvited.user_id)
+    console.log('bools')
+    console.log(hasPart, hasInvt)
+    if (userInvited && (hasPart || hasInvt)) {
+      const errMessage = basicMessage
+        .setText(
+          `<@${userInvited.user_id}> has already ${hasPart ? 'joined' : 'been invited'}!`
+        ).setAttachments([messages.throwdown_invite(throwdown)]).save()
 
-    if (user_to_invite && (hasPart || hasInvt)) {
-      const err_message = {
-        type: 'chat.update',
-        client: 'botClient',
-        message_ts,
-        channel_id,
-        text: `<@${user_to_invite.user_id}> has already ${hasPart ? 'joined' : 'been invited'}!`,
-        attachments: messages.throwdown_invite(throwdown),
-        mrkdwn_in: ['text']
-      }
-      messageList.push(err_message)
+      execList.push([slack, errMessage])
 
-    } else if (user_to_invite && !hasPart && !hasInvt) {
-      const newThrowdown = await upsertThrowdown(
-        {_id: throwdown._id},
-        {$push: {invitees: user_to_invite._id}}
-      )
+    } else if (userInvited && !hasPart && !hasInvt) {
+      const updatedThrowdown = await findFullThrowdown(deps, {
+        matchFields: {_id: throwdown._id},
+        updateFields: {$push: {invitees: userInvited._id}}
+      })
 
-      const newFullThrowdown = await findFullThrowdown({_id: newThrowdown._id})
+      const inviteMessage =
+        basicMessage.setText(
+          `<@${updatedThrowdown.created_by.user_id}> has invited you to their new Throwdown: "${updatedThrowdown.name}"`
+        ).setAttachment(
+          messages.accept_invite({
+            throwdown_id: updatedThrowdown._id,
+            user_to_invite: userInvited.user_id,
+            owner: user_id, team_id
+          })
+        ).save()
 
-      console.log(newFullThrowdown)
+      const inviteNotification =
+        basicMessage.setText(
+          `I've sent an invite to <@${userInvited.user_id}>`
+        ).setAttachment(
+          messages.throwdown_invite(updatedThrowdown)
+        ).save()
 
-      const invite_message = {
-        type: 'chat.dm',
-        client: 'botClient',
-        text: `<@${newFullThrowdown.created_by.user_id}> has invited you to their new Throwdown: "${newFullThrowdown.name}"`,
-        user_id: user_to_invite.user_id,
-        attachments: [
-          messages.accept_invite({throwdown_id, user_to_invite: user_to_invite.user_id, owner: user_id, team_id})
-        ],
-        mrkdwn_in: ['text']
-      }
-
-      const invite_notification = {
-        type: 'chat.update',
-        client: 'botClient',
-        text: `I've sent an invite to <@${user_to_invite.user_id}>`,
-        channel_id,
-        message_ts,
-        attachments: messages.throwdown_invite(newFullThrowdown),
-        mrkdwn_in: ['text']
-      }
-
-      messageList.push(invite_message, invite_notification)
+      execList.push([slack, inviteMessage]).push([slack, inviteNotification])
     }
   }
 
-
-
-
-  multiMessageController(messageList, res)
+  const response = await exec.many(execList)
 }

@@ -6,10 +6,6 @@ const bodyParser      = require('body-parser')
 const mongoose        = require('mongoose')
 const express         = require('express')
 const ejs             = require('ejs')
-const storeCreate     = require('./store')
-const Agenda          = require('agenda')
-const { defineJobs }  = require('./app/utils')
-
 
 
 //configure Mongoose
