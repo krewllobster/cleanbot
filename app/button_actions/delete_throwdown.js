@@ -1,71 +1,48 @@
-const multiMessageController = require('../controllers/multiMessageController')
-const {
-  throwdown_deleted,
-  all_public_throwdowns,
-  all_user_throwdowns
-} = require('../messages')
-const {
-  deleteThrowdown,
-  findFullThrowdown
-} = require('../db_actions')
 
-const { archiveChannel } = require('../utils')
+module.exports = async (data, deps) => {
 
-module.exports = async ({
-  message_ts,
-  user_id,
-  team_id,
-  channel_id,
-  throwdown_id,
-  public
-}, res) => {
+  const {message_ts, user_id, team_id, channel_id, throwdown_id, public} = data
+  const {slack, dbInterface, commandFactory, exec, user} = deps
 
-  const throwdownToDelete = await findFullThrowdown({_id: throwdown_id})
+  const removeThrowdown = commandFactory('db').setEntity('Throwdown')
+    .setOperation('findOneAndRemove').setMatch({_id: throwdown_id})
+    .setPopulate([
+      {path: 'created_by', model: 'User'}, {path: 'participants', model: 'User'},
+      {path: 'invitees', model: 'User'}, {path: 'categories', model: 'Category'}
+    ]).save()
 
-  let messages = []
+  const deletedThrowdown = await exec.one(dbInterface, removeThrowdown)
 
-  if(!throwdownToDelete) {
-    const err_message = {
-      type: 'chat.update',
-      client: 'botClient',
-      message_ts,
-      channel_id,
-      text: `It looks like this Throwdown was already deleted.`,
-      attachments: []
-    }
-    messages.push(err_message)
-  } else {
-    const deleteResponse = await deleteThrowdown({_id: throwdown_id})
+  const execList = []
 
-    const repl_message = {
-      type: 'chat.update',
-      client: 'botClient',
-      message_ts,
-      channel_id,
-      text: `Throwdown "${throwdownToDelete.name}" has been deleted.`
-    }
+  const successfulDelete = commandFactory('slack').setOperation('updateMessage')
+    .setTs(message_ts).setChannel(channel_id)
+    .setText(`Throwdown "${deletedThrowdown.name}" has been successfully deleted`)
+    .setAttachments([]).save()
 
-    if(public) {
-      repl_message.attachments = await all_public_throwdowns({user_id, team_id})
-    } else {
-      repl_message.attachments = await all_user_throwdowns({user_id, team_id})
-    }
+  const response = await exec.one(slack, successfulDelete)
 
-    messages.push(repl_message)
+  deletedThrowdown.participants.forEach(p => {
+    const getChannel = commandFactory('slack').setOperation('openDm')
+      .setUsers(p.user_id).save()
 
-    throwdownToDelete.participants.forEach(p => {
-      if (p.opt_in && p.user_id !== user_id) {
-        messages.push({
-          type: 'chat.dm',
-          client: 'botClient',
-          user_id: p.user_id,
-          attachments: [
-            throwdown_deleted(throwdownToDelete)
-          ]
-        })
-      }
-    })
-  }
+    execList.push([slack, getChannel])
+  })
 
-  multiMessageController(messages, res)
+  const channels = await exec.many(execList)
+
+  const messageList = []
+
+  channels.forEach(({channel}) => {
+    const deletedMessage = commandFactory('slack').setOperation('basicMessage')
+      .setChannel(channel.id).setText(
+        `Throwdown "${deletedThrowdown.name}" has been deleted by ${deletedThrowdown.created_by.name}`
+      ).save()
+
+    messageList.push([slack, deletedMessage])
+  })
+
+  const responses = await exec.many(messageList)
+
+  console.log(responses)
 }

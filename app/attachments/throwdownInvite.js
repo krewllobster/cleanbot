@@ -1,23 +1,22 @@
 
+module.exports = ({participants, invitees, _id}) => {
+  let participantList, inviteeList
+  if (participants[0]) {
+    participantList = participants.map(p => `<@${p.user_id}>`).join(', ')
+  }
 
-module.exports = (throwdown) => {
-  const participants = throwdown.participants.reduce((acc, p) => {
-    return acc + `<@${p.user_id}> `
-  }, '')
+  if (invitees[0]) {
+    inviteeList = invitees.map(i => `<@${i.user_id}>`).join(', ')
+  }
 
-  const invitees = throwdown.invitees.reduce((acc, i) => {
-    return acc + `<@${i.user_id}> `
-  }, '')
-
-  return [
-    {
+  return [{
       title: 'Current participants:',
-      text: participants,
+      text: participantList,
       mrkdwn_in: ['text']
     },
     {
       title: 'Invited but not joined:',
-      text: invitees,
+      text: inviteeList,
       mrkdwn_in: ['text']
     },
     {
@@ -26,12 +25,11 @@ module.exports = (throwdown) => {
       callback_id: 'send_invite',
       actions: [
         {
-          name: throwdown._id,
+          name: _id,
           text: 'select a user',
           type: 'select',
           data_source: 'users'
         }
       ]
-    }
-  ]
+  }]
 }

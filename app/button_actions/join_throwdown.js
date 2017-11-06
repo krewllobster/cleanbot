@@ -1,45 +1,49 @@
-const { User, Throwdown } = require('../models')
-const { fundFullThrowdown, upsertThrowdown } = require('../db_actions')
-const { all_public_throwdowns, all_user_throwdowns} = require('../messages')
-const multiMessageController = require('../controllers/multiMessageController')
+const { findFullThrowdown, findAllThrowdowns } = require('../common')
+const { singleThrowdown } = require('../attachments')
 
-module.exports = async ({
-  message_ts,
-  user_id,
-  team_id,
-  channel_id,
-  throwdown_id,
-  public,
-}, res) => {
+module.exports = async (data, deps) => {
 
-  const user = await User.findOne({user_id, team_id})
-  const throwdown = await Throwdown.findOne({_id: throwdown_id})
+  const {message_ts, user_id, team_id, channel_id, throwdown_id, public} = data
+  const {slack, dbInterface, commandFactory, exec, user} = deps
 
-  const confirm_message = {
-    type: 'chat.update',
-    client: 'botClient',
-    message_ts,
-    channel_id,
-  }
+  const throwdown = await findFullThrowdown(deps, {
+    matchFields: {_id: throwdown_id},
+    updateFields: {$push: {participants: user._id}}
+  })
+
+  const confirmMessageBase = commandFactory('slack').setOperation('updateMessage')
+    .setText(`You've joined Throwdown "${throwdown.name}"!`)
+    .setTs(message_ts).setChannel(channel_id)
+
+  const throwdownList = await findAllThrowdowns(deps)
+
+  const publicThrowdowns = [], privateThrowdowns = []
+
+  throwdownList.forEach(td => {
+    if (td.privacy === 'public') {
+      publicThrowdowns.push(singleThrowdown(td, user_id, public))
+    }
+    if (td.participants.some(p => p.user_id === user.user_id)) {
+      privateThrowdowns.push(singleThrowdown(td, user_id, public))
+    }
+  })
+
+  let confirmationMessage
 
   if (public && user && throwdown) {
-    let updatedThrowdown = await upsertThrowdown(
-      {_id: throwdown._id},
-      {$push: {participants: user._id}}
-    )
-    confirm_message.attachments = await all_public_throwdowns({user_id, team_id})
-    confirm_message.text = `You joined Throwdown "${throwdown.name}"\nPublic Throwdowns:`
+    confirmationMessage = confirmMessageBase
+      .setAttachments(publicThrowdowns).save()
+
   } else if (!public && user && throwdown) {
-    let updatedThrowdown = await upsertThrowdown(
-      {_id: throwdown._id},
-      {$push: {participants: user._id}}
-    )
-    confirm_message.attachments = await all_user_throwdowns({user_id, team_id})
-    confirm_message.text = `You joined Throwdown "${throwdown.name}"\nYour Throwdowns:`
-  } else if (!user || !throwdown) {
-    confirm_message.text = `Something has changed since this message was sent. Please refresh with a new "/rumble" command.`
-    confirm_message.attachments = []
+    const count = privateThrowdowns.length
+    const textAddition =
+      count < 1
+        ? `\nLook's like you are not participating in any Throwdowns`
+        : `\nYour Throwdowns:`
+
+    confirmationMessage = confirmMessageBase
+      .setAttachments(privateThrowdowns).save()
   }
 
-  multiMessageController([confirm_message], res)
+  exec.one(slack, confirmationMessage)
 }

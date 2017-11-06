@@ -1,6 +1,9 @@
-const messageList         = require('../messages')
 const agenda              = require('../jobs/jobs')
-const processingMessage   = require('../common').processing
+const { singleThrowdown } = require('../attachments')
+const {
+  processing: processingMessage,
+  findFullThrowdown
+}  = require('../common')
 
 module.exports = async (payload, submission, deps) => {
 
@@ -32,7 +35,8 @@ module.exports = async (payload, submission, deps) => {
     description,
     start_date: new Date(start_date),
     participants: [user._id],
-    categories: [category]
+    categories: [category],
+    invitees: []
   }
 
   const findOrCreateThrowdown =
@@ -49,18 +53,11 @@ module.exports = async (payload, submission, deps) => {
   let responseMessage
 
   if (created) {
-    const findFullThrowdown = commandFactory('db').setOperation('findOne')
-      .setEntity('Throwdown').setMatch({_id: doc._id})
-      .setPopulate([
-        {path: 'created_by', model: 'User'}, {path: 'participants', model: 'User'},
-        {path: 'invitees', model: 'User'}, {path: 'categories', model: 'Category'}
-      ]).save()
-
-    const throwdown =
-      await exec.one(dbInterface, findFullThrowdown).catch(errorHandle)
+    const throwdown = await findFullThrowdown(deps, {matchFields: {_id: doc._id}})
     // const channel_job = agenda.create('open channel', {throwdown_id: throwdown._id})
     // channel_job.schedule(new Date(throwdown.start_date))
     // channel_job.save()
+    console.log(throwdown)
     responseMessage = newThrowdownMessage.setText(
       `Congratulations, your Throwdown has been set up! \n ${
         throwdown.privacy === 'private'
@@ -68,7 +65,7 @@ module.exports = async (payload, submission, deps) => {
           : 'Your throwdown will now show up for anyone to join.'
       }`)
       .setAttachments([
-        messageList.single_throwdown({throwdown, user_id, public: false})
+        singleThrowdown(throwdown, user_id, false)
       ]).save()
   }
 

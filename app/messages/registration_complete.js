@@ -10,14 +10,14 @@ module.exports = () => {
       },
       {
         title: 'View public throwdowns:',
-        value: '/rumble list throwdowns'
+        value: '"/rumble list throwdowns" or "/rumble list"'
       },
       {
         title: `View throwdowns you're a part of:`,
-        value: '/rumble my throwdowns'
+        value: '"/rumble my throwdowns"'
       }
     ],
-    fallback: "Next Steps",
+    fallback: "Unknown Command",
     attachment_type: "default",
   }
 }

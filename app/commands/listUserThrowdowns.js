@@ -35,7 +35,7 @@ module.exports = async (body, deps) => {
       .setAttachments(attachments).save()
 
   if (attachments.length < 1) {
-    messageWithList.text = `It looks like there aren't any public Throwdowns yet!`
+    messageWithList.text = `It looks like you aren't in any Throwdowns yet!`
   }
 
   const response = await exec.one(slack, messageWithList)

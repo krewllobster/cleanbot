@@ -1,5 +1,5 @@
 const actions         = require('../actions')
-const {initUser} = require('../common')
+const { initSlack, findOrCreateUser } = require('../common')
 
 const {
   commandFactory,
@@ -12,17 +12,25 @@ module.exports = async (req, res) => {
   const payload = JSON.parse(req.body.payload)
   const {
     type, token, callback_id, submission,
-    user: {id: userId}, team: {id: teamId},
+    user: {id: user_id}, team: {id: team_id},
   } = payload
 
   const errorHandle = (err) => {
     throw new Error('error in Command Controller::' + err)
   }
-  const data = {token, team_id: teamId, user_id: userId}
 
-  let domains = {dbInterface, commandFactory, exec, slackApi}
+  let domains = {
+    commandFactory,
+    dbInterface,
+    exec,
+    slackApi
+  }
 
-  deps = await initUser(data, res, domains).catch(errorHandle)
+  const slack = await initSlack({token, team_id}, res, domains)
+
+  const deps = {slack, dbInterface, commandFactory, exec}
+
+  deps.user = await findOrCreateUser(deps, {user_id, team_id})
 
   if (type === 'interactive_message') {
     console.log(`calling action ${callback_id}`)

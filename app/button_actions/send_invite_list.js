@@ -1,16 +1,12 @@
-const messageList = require('../messages')
+const { throwdownInvite } = require('../attachments')
+
 const {
   findFullThrowdown,
   processing: processingMessage
 } = require('../common')
 
-module.exports = async ({
-  message_ts,
-  user_id,
-  team_id,
-  channel_id,
-  throwdown_id
-}, deps) => {
+module.exports = async (data, deps) => {
+  const {message_ts, user_id, team_id, channel_id, throwdown_id} = data
   const {slack, commandFactory, exec} = deps
 
   const processing = processingMessage(deps, {
@@ -22,9 +18,8 @@ module.exports = async ({
   const {ts} = await processing.next(channel).value
 
   const throwdown = await findFullThrowdown(deps, {matchFields: {_id: throwdown_id}})
-  console.log(throwdown)
-  const attachment = messageList.throwdown_invite(throwdown)
-  console.log(attachment)
+  const attachment = throwdownInvite(throwdown)
+
   const inviteMessage = commandFactory('slack').setOperation('updateMessage')
     .setTs(ts).setChannel(channel.id)
     .setText(`Invite a user to Throwdown "${throwdown.name}"`)

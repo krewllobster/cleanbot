@@ -1,23 +1,35 @@
 
 
-module.exports = async (deps, {matchFields, updateFields}) => {
-  const {slack, dbInterface, commandFactory, exec} = deps
-  console.log(matchFields)
-  const baseCommand = commandFactory('db').setOperation('findOne')
-    .setEntity('Throwdown').setMatch(matchFields)
-    .setPopulate([
-      {path: 'created_by', model: 'User'}, {path: 'participants', model: 'User'},
-      {path: 'invitees', model: 'User'}, {path: 'categories', model: 'Category'}
-    ])
+module.exports = (deps, {matchFields, updateFields}) => {
+  return new Promise(async (resolve, reject) => {
+    const {slack, dbInterface, commandFactory, exec} = deps
 
-  let findFullThrowdown
+    const baseCommand = commandFactory('db').setOperation('findOne')
+      .setEntity('Throwdown').setMatch(matchFields)
+      .setPopulate([
+        {path: 'created_by', model: 'User'}, {path: 'participants', model: 'User'},
+        {path: 'invitees', model: 'User'}, {path: 'categories', model: 'Category'}
+      ])
 
-  if(updateFields) {
-    findFullThrowdown = baseCommand.setOperation('findOneAndUpdate')
-      .setUpdate(updateFields).setOptions({new: true}).save()
-  } else {
-    findFullThrowdown = baseCommand.save()
-  }
-  console.log(findFullThrowdown)
-  return await exec.one(dbInterface, findFullThrowdown)
+    let findFullThrowdown
+
+    if(updateFields) {
+      findFullThrowdown = baseCommand.setOperation('findOneAndUpdate')
+        .setUpdate(updateFields).setOptions({new: true}).save()
+    } else {
+      findFullThrowdown = baseCommand.save()
+    }
+
+    const throwdown = await exec.one(dbInterface, findFullThrowdown)
+
+    if(throwdown.invitees[0] === null) {
+      throwdown.invitees = []
+    }
+
+    if(!throwdown) {
+      reject(new Error('throwdown not found'))
+    } else {
+      resolve(throwdown)
+    }
+  })
 }
