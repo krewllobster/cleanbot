@@ -35,8 +35,8 @@ module.exports = (categories) => {
         type: 'text',
         name: 'name',
         label: 'Throwdown Name',
-        placeholder: `Trivia Bot's first challenge!`,
-        max_length: 35
+        placeholder: `My first challenge!`,
+        max_length: 21
       },
       {
         type: 'text',

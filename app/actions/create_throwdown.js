@@ -50,10 +50,10 @@ module.exports = async (payload, submission, deps) => {
     commandFactory('slack').setOperation('updateMessage')
       .setChannel(channel.id).setTs(ts)
 
-  let responseMessage
+  let responseMessage, throwdown
 
   if (created) {
-    const throwdown = await findFullThrowdown(deps, {matchFields: {_id: doc._id}})
+    throwdown = await findFullThrowdown(deps, {matchFields: {_id: doc._id}})
     // const channel_job = agenda.create('open channel', {throwdown_id: throwdown._id})
     // channel_job.schedule(new Date(throwdown.start_date))
     // channel_job.save()
@@ -74,5 +74,50 @@ module.exports = async (payload, submission, deps) => {
       newThrowdownMessage.setText(`Look's like that name's taken. Please try again`)
       .setAttachments([]).save()
   }
+
   const sendResponse = await exec.one(slack, responseMessage).catch(errorHandle)
+
+  initChannel(throwdown, deps)
+}
+
+const initChannel = async (throwdown, deps) => {
+  const {slack, dbInterface, commandFactory, exec, user} = deps
+  const name = throwdown.name.split(' ').join('_')
+
+  const createChannel = commandFactory('slack').setOperation('createConversation')
+    .set({name, private: true}).setClient('userClient').save()
+
+  const {channel} = await exec.one(slack, createChannel)
+
+  const setThrowdownChannel = commandFactory('db').setEntity('Throwdown')
+    .setOperation('findOneAndUpdate').setMatch({_id: throwdown._id})
+    .setUpdate({channel: channel.id}).save()
+
+  const setChannelTopic = commandFactory('slack').setOperation('setTopic')
+    .setChannel(channel.id).setTopic(throwdown.description)
+    .setClient('userClient').save()
+
+  const setChannelPurpose = commandFactory('slack').setOperation('setPurpose')
+    .setChannel(channel.id).setPurpose(`<@${throwdown.created_by.user_id}>'s challenge`)
+    .setClient('userClient').save()
+
+  const responses = await exec.many([
+    [dbInterface, setThrowdownChannel], [slack, setChannelTopic],
+    [slack, setChannelPurpose]
+  ])
+
+  const getBotId = commandFactory('db').setEntity('Team').setOperation('findOne')
+    .setMatch({team_id: throwdown.team_id}).save()
+
+  const {bot: {bot_user_id}} = await exec.one(dbInterface, getBotId)
+
+  const usersToInvite = bot_user_id + ',' + user.user_id
+
+  const inviteBot = commandFactory('slack').setOperation('inviteToConversation')
+    .setClient('userClient').setChannel(channel.id)
+    .setUsers(usersToInvite).save()
+
+  const response = await exec.one(slack, inviteBot)
+
+  console.log(response)
 }

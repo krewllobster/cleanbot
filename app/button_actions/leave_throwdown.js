@@ -56,5 +56,11 @@ module.exports = async (data, deps) => {
       .save()
   }
 
-  const response = await exec.one(slack, confirmationMessage)
+  const kickUser = commandFactory('slack')
+    .setOperation('kickFromConversation')
+    .setUser(user.user_id).setChannel(throwdown.channel)
+    .setClient('userClient').save()
+
+  console.log(kickUser)
+  exec.many([[slack, confirmationMessage], [slack, kickUser]])
 }

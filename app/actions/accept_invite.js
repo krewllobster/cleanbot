@@ -50,5 +50,9 @@ module.exports = async (payload, action, deps) => {
       `<@${user_to_invite}> has ${accepted ? 'accepted': 'rejected'} your invitation to Throwdown: "${updatedThrowdown.name}"`
     ).save()
 
-  exec.one(slack, notificationMessage)
+  const inviteUser = commandFactory('slack').setOperation('inviteToConversation')
+    .setUsers(user.user_id).setChannel(updatedThrowdown.channel)
+    .setClient('userClient').save()
+
+  exec.many([[slack, notificationMessage], [slack, inviteUser]])
 }

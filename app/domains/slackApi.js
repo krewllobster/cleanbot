@@ -25,6 +25,27 @@ const SlackApi = ({user_token, bot_token}) => {
       return client.chat.update(
         ts, channel, text, {as_user: true, attachments}
       )
+    },
+    createConversation: ({name, private}) => {
+      return client.conversations.create(name, {is_private: private})
+    },
+    setTopic: ({channel, topic}) => {
+      return client.conversations.setTopic(channel, topic)
+    },
+    setPurpose: ({channel, purpose}) => {
+      return client.conversations.setPurpose(channel, purpose)
+    },
+    inviteToConversation: ({channel, users}) => {
+      return client.conversations.invite(channel, users)
+    },
+    renameConversation: ({channel, name}) => {
+      return client.conversations.rename(channel, name)
+    },
+    archiveConversation: ({channel}) => {
+      return client.conversations.archive(channel)
+    },
+    kickFromConversation: ({channel, user}) => {
+      return client.conversations.kick(channel, user)
     }
   })
 

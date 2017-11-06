@@ -48,5 +48,9 @@ module.exports = async (data, deps) => {
       .setAttachments(privateThrowdowns).save()
   }
 
-  exec.one(slack, confirmationMessage)
+  const inviteUser = commandFactory('slack').setOperation('inviteToConversation')
+    .setUsers(user.user_id).setChannel(throwdown.channel)
+    .setClient('userClient').save()
+
+  exec.many([[slack, confirmationMessage], [slack, inviteUser]])
 }

@@ -3,13 +3,21 @@ const createCommand = (type) => {
     client: 'botClient'
   }
 
-  const methodObject = {}
+  const methodObject = {
+    set: (obj) => {
+      Object.keys(obj).forEach(key => {
+        command[key] = obj[key]
+      })
+      return methodObject
+    }
+  }
 
   let methods
   switch(type) {
     case 'slack':
       methods = ['Operation', 'Client', 'Dialog', 'Trigger', 'Users',
-                 'Ts', 'User', 'Channel', 'Text', 'Attachments']
+                 'Ts', 'User', 'Channel', 'Text', 'Attachments', 'Name',
+                 'Private', 'Topic', 'Purpose']
       break
     case 'db':
       methods = ['Entity', 'Operation', 'Match', 'Update', 'Options', 'Populate']

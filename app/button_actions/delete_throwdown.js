@@ -23,10 +23,11 @@ module.exports = async (data, deps) => {
   const response = await exec.one(slack, successfulDelete)
 
   deletedThrowdown.participants.forEach(p => {
-    const getChannel = commandFactory('slack').setOperation('openDm')
-      .setUsers(p.user_id).save()
-
-    execList.push([slack, getChannel])
+    if(p.user_id !== deletedThrowdown.created_by.user_id) {
+      const getChannel = commandFactory('slack').setOperation('openDm')
+        .setUsers(p.user_id).save()
+      execList.push([slack, getChannel])
+    }
   })
 
   const channels = await exec.many(execList)
@@ -36,7 +37,7 @@ module.exports = async (data, deps) => {
   channels.forEach(({channel}) => {
     const deletedMessage = commandFactory('slack').setOperation('basicMessage')
       .setChannel(channel.id).setText(
-        `Throwdown "${deletedThrowdown.name}" has been deleted by ${deletedThrowdown.created_by.name}`
+        `Throwdown "${deletedThrowdown.name}" has been deleted by ${deletedThrowdown.created_by.user_id}`
       ).save()
 
     messageList.push([slack, deletedMessage])
@@ -44,5 +45,16 @@ module.exports = async (data, deps) => {
 
   const responses = await exec.many(messageList)
 
-  console.log(responses)
+  const underName = deletedThrowdown.name.split(' ').join('_').substring(0,12)
+
+  const renameChannel = commandFactory('slack').setOperation('renameConversation')
+    .setChannel(deletedThrowdown.channel)
+    .setClient('userClient').setName(underName + '_deleted').save()
+
+  await exec.one(slack, renameChannel)
+
+  const archiveChannel = commandFactory('slack').setOperation('archiveConversation')
+    .setChannel(deletedThrowdown.channel).setClient('userClient').save()
+
+  await exec.one(slack, archiveChannel)
 }
