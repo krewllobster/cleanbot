@@ -12,7 +12,10 @@ module.exports = async (data, deps) => {
   })
 
   const confirmMessageBase = commandFactory('slack').setOperation('updateMessage')
-    .setText(`You've joined Throwdown "${throwdown.name}"!`)
+    .setText(
+      `You've joined Throwdown "${throwdown.name}"!` +
+      `${public ? '\nPublic Throwdowns:' : '\nYour Throwdowns'}`
+    )
     .setTs(message_ts).setChannel(channel_id)
 
   const throwdownList = await findAllThrowdowns(deps)

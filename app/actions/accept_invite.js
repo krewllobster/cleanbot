@@ -21,7 +21,6 @@ module.exports = async (payload, action, deps) => {
   const replaceBase = commandFactory('slack').setOperation('updateMessage')
     .setTs(message_ts).setChannel(channel_id)
 
-  //logic here
   const getFullThrowdown = updateThrowdownBase
     .setUpdate(
       accepted

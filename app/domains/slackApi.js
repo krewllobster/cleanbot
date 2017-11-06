@@ -1,5 +1,3 @@
-const { to } = require('../utils')
-
 const SlackApi = ({user_token, bot_token}) => {
   const WebClient = require('@slack/client').WebClient
 
