@@ -9,7 +9,8 @@ const createCommand = (type) => {
         command[key] = obj[key]
       })
       return methodObject
-    }
+    },
+    save: () => Object.assign({}, command)
   }
 
   let methods
@@ -35,7 +36,7 @@ const createCommand = (type) => {
       return command[m]
     }
   })
-  methodObject.save = () => Object.assign({}, command)
+
   return methodObject
 }
 

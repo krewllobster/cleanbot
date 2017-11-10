@@ -15,6 +15,14 @@ module.exports = async (data, deps) => {
 
   const execList = []
 
+  if(!deletedThrowdown) {
+    const alreadyDeleted = commandFactory('slack').setOperation('updateMessage')
+      .setTs(message_ts).setChannel(channel_id).setText('This has already been deleted')
+      .setAttachments([]).save()
+
+    return await exec.one(slack, alreadyDeleted)
+  }
+
   const successfulDelete = commandFactory('slack').setOperation('updateMessage')
     .setTs(message_ts).setChannel(channel_id)
     .setText(`Throwdown "${deletedThrowdown.name}" has been successfully deleted`)
