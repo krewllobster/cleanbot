@@ -29,8 +29,8 @@ module.exports = async (payload, action, deps) => {
   })[0].text
 
   const submitted = new Date()
-  console.log('requested: ' + requested)
-  console.log('submitted: ' + submitted)
+  const duration = ((new Date(submitted).getTime()) - (new Date(requested).getTime()))/1000
+  console.log
   const updatedThrowdown = await findFullThrowdown(deps, {
     matchFields: {_id: throwdown_id},
     updateFields: {$push: {
@@ -51,9 +51,9 @@ module.exports = async (payload, action, deps) => {
   let text
 
   if(correct) {
-    text = `Congratulations! Your answer was correct, and took you "calc here" seconds.`
+    text = `Congratulations! Your answer was correct, and took you ${duration} seconds.`
   } else if (!correct) {
-    text = `Whoops! The correct answer was "${correctAnswer}". You took "calc here" seconds to guess wrong...`
+    text = `Whoops! The correct answer was "${correctAnswer}". You took ${duration} seconds to guess wrong...`
   }
 
   const attachments = selectQuestionButtons(updatedThrowdown, user, round)
