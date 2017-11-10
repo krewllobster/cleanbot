@@ -3,5 +3,8 @@
 module.exports = {
   throwdownInvite: require('./throwdownInvite'),
   singleThrowdown: require('./singleThrowdown'),
-  acceptInviteButtons: require('./acceptInviteButtons')
+  acceptInviteButtons: require('./acceptInviteButtons'),
+  selectQuestionButtons: require('./selectQuestionButtons'),
+  singleQuestion: require('./singleQuestion'),
+  getQuestions: require('./getQuestions')
 }

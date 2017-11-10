@@ -3,4 +3,7 @@ module.exports = {
   throwdown_action: require('./throwdown_action'),
   send_invite: require('./send_invite'),
   create_throwdown: require('./create_throwdown'),
+  send_question: require('./send_question'),
+  check_answer: require('./check_answer'),
+  send_question_list: require('./send_question_list')
 }

@@ -8,7 +8,9 @@ module.exports = (deps, {matchFields, updateFields}) => {
       .setEntity('Throwdown').setMatch(matchFields)
       .setPopulate([
         {path: 'created_by', model: 'User'}, {path: 'participants', model: 'User'},
-        {path: 'invitees', model: 'User'}, {path: 'categories', model: 'Category'}
+        {path: 'invitees', model: 'User'}, {path: 'categories', model: 'Category'},
+        {path: 'questions.question', model: 'Question'},
+        {path: 'responses.question', model: 'Question'},
       ])
 
     let findFullThrowdown

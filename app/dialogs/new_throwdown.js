@@ -5,9 +5,9 @@ module.exports = (categories) => {
 
   //minutes
   for (i = 1; i < 5; i++) {
-    let d = moment().add(i*10, 'seconds')
+    let d = moment().add(i*30, 'seconds')
     let date = {
-      label: `${i*10} seconds from now`,
+      label: `${i*30} seconds from now`,
       value: d
     }
     dates.push(date)

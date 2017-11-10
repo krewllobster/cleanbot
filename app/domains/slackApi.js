@@ -12,6 +12,9 @@ const SlackApi = ({user_token, bot_token}) => {
       const {channel, text, attachments} = command
       return client.chat.postMessage(channel, text, {attachments})
     },
+    ephemeralMessage: ({channel, text, user, attachments}) => {
+      return client.chat.postEphemeral(channel, text, user, {attachments, as_user: true})
+    },
     deleteMessage: ({ts, channel}) => {
       return client.chat.delete(ts, channel, {as_user: true})
     },
@@ -46,6 +49,9 @@ const SlackApi = ({user_token, bot_token}) => {
     },
     kickFromConversation: ({channel, user}) => {
       return client.conversations.kick(channel, user)
+    },
+    addPin: ({channel, ts}) => {
+      return client.pins.add(channel, {timestamp: ts})
     }
   })
 

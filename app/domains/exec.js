@@ -2,6 +2,7 @@ const exec = () => {
   const one = (domain, command) => {
     console.log(`executing "${command.operation}${command.entity ? ' ' + command.entity : ''}" through "${domain.name}"`)
     return domain.execute(command).catch(err => {
+      console.log(command)
       console.log('error executing above command::' + err)
       throw err
     })

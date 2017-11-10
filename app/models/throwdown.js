@@ -3,7 +3,7 @@ const findOrCreate = require('mongoose-findorcreate')
 
 const throwdownSchema = new mongoose.Schema({
   name: String,
-  categories: [{type: Number, ref: 'Category', field: '_id'}],
+  categories: [{type: Number, ref: 'Category', field: '_id', default: 9}],
   participants: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
   invitees: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
   description: String,
@@ -12,6 +12,19 @@ const throwdownSchema = new mongoose.Schema({
   start_date: Date,
   privacy: String,
   channel: String,
+  round: {type: Number, default: 0},
+  questions: [{
+    question: {type: mongoose.Schema.Types.ObjectId, ref: 'Question'},
+    round: Number
+  }],
+  responses: [{
+    question: {type: mongoose.Schema.Types.ObjectId, ref: 'Question'},
+    user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+    throwdown: {type: mongoose.Schema.Types.ObjectId, ref: 'Throwdown'},
+    correct: Boolean,
+    requested: Date,
+    submitted: Date,
+  }]
 }, {toObject: {virtuals:  true}})
 
 

@@ -7,7 +7,7 @@ const questionSchema = new mongoose.Schema({
     {text: String, correct: Boolean}
   ],
   type: String,
-  difficulty: String
+  difficulty: String,
 })
 
 const Question = mongoose.model("Question", questionSchema)

@@ -7,7 +7,6 @@ const userSchema = new mongoose.Schema({
   is_admin: Boolean,
   tz_label: String,
   tz_offset: Number,
-  throwdowns: [{type: mongoose.Schema.Types.ObjectId, ref: 'Throwdown'}],
   opt_in: {type: Boolean, default: true},
   profile: {
     fav_color: String,

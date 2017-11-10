@@ -45,11 +45,11 @@ module.exports = async (data, deps) => {
 
   const responses = await exec.many(messageList)
 
-  const underName = deletedThrowdown.name.split(' ').join('_').substring(0,12)
+  let rndName = Math.random().toString(36).substring(2, 14)
 
   const renameChannel = commandFactory('slack').setOperation('renameConversation')
     .setChannel(deletedThrowdown.channel)
-    .setClient('userClient').setName(underName + '_deleted').save()
+    .setClient('userClient').setName(rndName + '_deleted').save()
 
   await exec.one(slack, renameChannel)
 
