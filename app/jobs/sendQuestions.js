@@ -32,10 +32,8 @@ module.exports = function (agenda) {
       updateFields: {$inc: {round: 1}}
     })
 
-    console.log('my channel is')
-    console.log(fullThrowdown.channel)
-
     if (fullThrowdown.round > 10) {
+      console.log('throwdown round is past 10, need to terminate job')
       return done()
     }
 

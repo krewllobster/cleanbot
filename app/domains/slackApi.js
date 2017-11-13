@@ -29,6 +29,9 @@ const SlackApi = ({user_token, bot_token}) => {
         ts, channel, text, {as_user: true, attachments}
       )
     },
+    getChannels: (command) => {
+      return client.groups.list()
+    },
     createConversation: ({name, private}) => {
       return client.conversations.create(name, {is_private: private})
     },

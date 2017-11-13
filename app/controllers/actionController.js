@@ -32,6 +32,7 @@ module.exports = async (req, res) => {
 
   deps.user = await findOrCreateUser(deps, {user_id, team_id})
 
+  console.log('executing received action: ' + callback_id)
   if (type === 'interactive_message') {
     console.log(`calling action ${callback_id}`)
     if(actions.hasOwnProperty(callback_id)) {

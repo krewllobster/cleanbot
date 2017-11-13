@@ -44,6 +44,36 @@ module.exports = async (payload, submission, deps) => {
     invitees: []
   }
 
+  //check name and send error message if problem found
+  const errorBase = commandFactory('slack').setOperation('updateMessage')
+    .setChannel(channel.id).setTs(ts)
+
+  if(name) {
+    const getGroupList = commandFactory('slack').setClient('userClient')
+      .setOperation('getChannels').save()
+
+    const channelName = name.split(' ').join('_')
+
+    if(channelName.match(/[^(a-z|0-9|_|\-)]/) || channelName.length > 21) {
+      console.log('throwdown title had invalid character or was too long')
+      const invalidNameMessage = errorBase
+        .setText('Invalid Throwdown Name. Please try again').save()
+
+      return await exec.one(slack, invalidNameMessage)
+    }
+
+    const {groups} = await exec.one(slack, getGroupList)
+
+    if(groups && groups.some(c => c.name === channelName)) {
+      console.log('throwdown channel name was already taken')
+      const nameTakenMessage = errorBase
+        .setText('That name is already taken. Please try again!').save()
+
+      return await exec.one(slack, nameTakenMessage)
+    }
+  }
+
+  console.log('creating new throwdown in database')
   const findOrCreateThrowdown =
     commandFactory('db').setEntity('Throwdown').setOperation('findOrCreate')
     .setMatch({name}).setUpdate(newThrowdown).save()
@@ -57,25 +87,27 @@ module.exports = async (payload, submission, deps) => {
 
   let responseMessage, throwdown
 
-  if (created) {
-    throwdown = await findFullThrowdown(deps, {matchFields: {_id: doc._id}})
-
-    responseMessage = newThrowdownMessage.setText(
-      `Congratulations, your Throwdown has been set up! \n ${
-        throwdown.privacy === 'private'
-          ? 'You can invite people using the invite button below.'
-          : 'Your throwdown will now show up for anyone to join.'
-      }`)
-      .setAttachments([
-        singleThrowdown(throwdown, user_id, false)
-      ]).save()
-  }
-
   if(!created) {
+    console.log('throwdown creation was unsuccessful')
     responseMessage =
-      newThrowdownMessage.setText(`Look's like that name's taken. Please try again`)
+      newThrowdownMessage.setText(`There was an error creating your Throwdown. Please try again`)
       .setAttachments([]).save()
+
+    return await exec.one(slack, responseMessage)
   }
+
+  console.log('throwdown successfully created')
+  throwdown = await findFullThrowdown(deps, {matchFields: {_id: doc._id}})
+
+  responseMessage = newThrowdownMessage.setText(
+    `Congratulations, your Throwdown has been set up! \n ${
+      throwdown.privacy === 'private'
+        ? 'You can invite people using the invite button below.'
+        : 'Your throwdown will now show up for anyone to join.'
+    }`)
+    .setAttachments([
+      singleThrowdown(throwdown, user_id, false)
+    ]).save()
 
   const sendResponse = await exec.one(slack, responseMessage)
 
@@ -83,6 +115,7 @@ module.exports = async (payload, submission, deps) => {
     initQuestions(throwdown, deps), initChannel(throwdown, deps)
   ])
 
+  console.log('initiating recurring throwdown jobs')
   const questionsJob = agenda
     .create('send question buttons', {
       throwdown_id: updatedThrowdown._id,
@@ -95,6 +128,7 @@ module.exports = async (payload, submission, deps) => {
 }
 
 const initChannel = async (throwdown, deps) => {
+  console.log('initializing throwdown channel')
   return new Promise(async (resolve, reject) => {
     const {slack, dbInterface, commandFactory, exec, user} = deps
     const name = throwdown.name.split(' ').join('_')
@@ -142,6 +176,7 @@ const initChannel = async (throwdown, deps) => {
 }
 
 const initQuestions = (throwdown, deps) => {
+  console.log('initializing throwdown questions')
   const errorHandle = (err) => {
     console.log(err)
     throw new Error('error creating throwdown::' + err)

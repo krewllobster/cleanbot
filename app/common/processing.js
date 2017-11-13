@@ -11,12 +11,14 @@ module.exports = function* (deps, data) {
   const getChannel =
     commandFactory('slack').setOperation('openDm').setUsers(user_id).save()
 
+  console.log(`yielding to get user's private channel`)
   const channel = yield exec.one(slack, getChannel).catch(errorHandle)
 
   const sendProcessingMessage =
     commandFactory('slack').setOperation('basicMessage')
       .setText(text).setChannel(channel.id).save()
 
+  console.log(`yielding to send processing message`)
   const ts = yield(exec.one(slack, sendProcessingMessage).catch(errorHandle))
 
   const deleteMessage =

@@ -28,6 +28,7 @@ module.exports = async ({body}, res) => {
   deps.user =
     await findOrCreateUser(deps, {user_id: body.user_id, team_id: body.team_id})
 
+  console.log('executing received command: ' + body.text)
   if (commands.hasOwnProperty(body.text)) {
     console.log(`passing control to command: "${body.text}"`)
     await commands[body.text](body, deps).catch(errorHandle)

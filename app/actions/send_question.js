@@ -21,12 +21,9 @@ module.exports = async (payload, action, deps) => {
   const text = `Your ${question.difficulty} question for round ${round} is below. Your points will depend on how quickly and accurately you answer. Good luck!`
   const attachment = singleQuestion(JSON.parse(action.value))
 
-  const deleteMessage = commandFactory('slack').setOperation('deleteMessage')
-    .setChannel(channel).setTs(message_ts).save()
-
   const sendQuestion = commandFactory('slack').setOperation('ephemeralMessage')
     .setUser(user_id).setChannel(channel).setText(text)
     .setAttachments(attachment).save()
 
-  exec.many([[slack, sendQuestion], [slack, deleteMessage]])
+  exec.one(slack, sendQuestion)
 }

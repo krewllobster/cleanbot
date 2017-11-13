@@ -1,4 +1,4 @@
-const {selectQuestionButtons} = require('../attachments')
+const { selectQuestionButtons } = require('../attachments')
 const { findFullThrowdown } = require('../common')
 
 
@@ -19,8 +19,7 @@ module.exports = async (payload, action, deps) => {
   const { slack, dbInterface, commandFactory, exec, user } = deps
 
   const fullThrowdown = await findFullThrowdown(deps, {
-    matchFields: {_id: throwdown_id},
-    updateFields: {$inc: {round: 1}}
+    matchFields: {_id: throwdown_id}
   })
 
   const sendQuestions = commandFactory('slack').setOperation('ephemeralMessage')

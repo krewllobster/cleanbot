@@ -1,4 +1,5 @@
 const random = (max) => Math.floor(Math.random() * (max + 1))
+
 const shuffle = (a) => {
   let length = a.length
   const shuffled = Array(length)
@@ -26,4 +27,7 @@ const findRandom = (array, limit) => {
   return selected
 }
 
-module.exports = findRandom
+module.exports = {
+  findRandom,
+  shuffle
+}

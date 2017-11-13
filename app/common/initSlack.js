@@ -1,7 +1,7 @@
 
 
 module.exports = async ({token, team_id}, res, domains) => {
-
+  console.log(`initiating slack interface with user's team's token`)
   const {commandFactory, dbInterface, exec, slackApi} = domains
 
   const errorHandle = (err) => {

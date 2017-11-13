@@ -18,6 +18,7 @@ module.exports = async (body, deps) => {
   const {channel} = await processing.next().value
   const {ts} = await processing.next(channel).value
 
+  console.log('fetching categories to populate dialog')
   const getCategories =
     commandFactory('db').setEntity('Category').setOperation('find').save()
 
@@ -29,6 +30,7 @@ module.exports = async (body, deps) => {
     commandFactory('slack').setOperation('openDialog').setTrigger(trigger_id)
       .setDialog(dialogs.new_throwdown(catList)).save()
 
+  console.log('sending dialog')
   const dialogSent = await exec.one(slack, sendDialog).catch(errorHandle)
 
   const response = await processing.next(ts).value

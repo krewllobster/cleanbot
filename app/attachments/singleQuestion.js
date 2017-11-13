@@ -1,4 +1,4 @@
-
+const { shuffle } = require('../common')
 
 module.exports = ({throwdown_id, question, channel, round}) => {
 
@@ -24,6 +24,6 @@ module.exports = ({throwdown_id, question, channel, round}) => {
     text: `Question: ${question.text}`,
     callback_id: 'check_answer',
     fallback: 'You have a new question to answer',
-    actions
+    actions: shuffle(actions)
   }]
 }
