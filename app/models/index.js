@@ -4,4 +4,5 @@ module.exports = {
   User: require('./user'),
   Category: require('./category'),
   Question: require('./question'),
+  Response: require('./response')
 }

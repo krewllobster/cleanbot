@@ -3,8 +3,6 @@ const {selectQuestionButtons} = require('../attachments')
 
 module.exports = async (payload, action, deps) => {
   console.log('checking answers')
-  console.log(payload)
-  console.log(action)
   const {
     user: {id: user_id},
     team: {id: team_id},
@@ -30,7 +28,23 @@ module.exports = async (payload, action, deps) => {
 
   const submitted = new Date()
   const duration = ((new Date(submitted).getTime()) - (new Date(requested).getTime()))/1000
-  console.log
+
+  const fullThrowdown = await findFullThrowdown(deps, {
+    matchFields: {_id: throwdown_id}
+  })
+
+  const hasResponse = fullThrowdown.responses
+    .filter(r => r.user.toString() === user._id.toString())
+    .some(r => r.question._id.toString() === question._id.toString())
+
+  if(hasResponse) {
+    const alreadyResponded = commandFactory('slack').setOperation('ephemeralMessage')
+      .setChannel(channel_id).setUser(user_id)
+      .setText(`You've already answered this!`).save()
+
+    return await exec.one(slack, alreadyResponded)
+  }
+
   const updatedThrowdown = await findFullThrowdown(deps, {
     matchFields: {_id: throwdown_id},
     updateFields: {$push: {
@@ -45,6 +59,7 @@ module.exports = async (payload, action, deps) => {
     }}
   })
 
+  console.log('throwdown updated')
   const replacementBase = commandFactory('slack').setOperation('ephemeralMessage')
     .setChannel(channel_id).setUser(user_id)
 
@@ -57,6 +72,10 @@ module.exports = async (payload, action, deps) => {
   }
 
   const attachments = selectQuestionButtons(updatedThrowdown, user, round)
+
+  if(attachments[0].actions.length === 0) {
+    text += `\nLook's like you're out of questions for round ${round}`
+  }
 
   const replacementMessage = replacementBase.setText(text)
     .setAttachments(attachments).save()

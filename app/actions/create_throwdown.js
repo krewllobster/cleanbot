@@ -160,10 +160,7 @@ const initChannel = async (throwdown, deps) => {
 
     const {bot: {bot_user_id}} = await exec.one(dbInterface, getBotId)
 
-    let usersToInvite = bot_user_id
-    if(throwdown.created_by.user_id !== user.user_id) {
-      usersToInvite += ',' + user.user_id
-    }
+    let usersToInvite = bot_user_id + ',' + throwdown.created_by.user_id
 
     const inviteBot = commandFactory('slack').setOperation('inviteToConversation')
       .setClient('userClient').setChannel(channel.id)

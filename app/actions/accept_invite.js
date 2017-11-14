@@ -1,4 +1,5 @@
 module.exports = async (payload, action, deps) => {
+  
   const {
     user: {id: user_id},
     team: {id: team_id},
@@ -6,6 +7,7 @@ module.exports = async (payload, action, deps) => {
     channel: {id: channel_id},
     original_message,
   } = payload
+
   const { throwdown_id, user_to_invite, owner } = JSON.parse(action.value)
   const {slack, dbInterface, commandFactory, exec, user} = deps
 
