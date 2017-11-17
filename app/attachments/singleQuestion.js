@@ -1,7 +1,6 @@
 const { shuffle } = require('../common')
 
 module.exports = ({throwdown_id, question, channel, round}) => {
-  console.log(throwdown_id, question, channel, round)
   let actions = []
 
   question.answers.forEach(a => {

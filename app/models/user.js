@@ -8,12 +8,7 @@ const userSchema = new mongoose.Schema({
   tz_label: String,
   tz_offset: Number,
   opt_in: {type: Boolean, default: true},
-  profile: {
-    fav_color: String,
-    siblings: String,
-    island: String,
-    birthday_present: String,
-  }
+  display_name: String,
 })
 
 const User = mongoose.model("User", userSchema)

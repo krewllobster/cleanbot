@@ -16,14 +16,6 @@ const throwdownSchema = new mongoose.Schema({
   questions: [{
     question: {type: mongoose.Schema.Types.ObjectId, ref: 'Question'},
     round: Number
-  }],
-  responses: [{
-    question: {type: mongoose.Schema.Types.ObjectId, ref: 'Question'},
-    user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
-    throwdown: {type: mongoose.Schema.Types.ObjectId, ref: 'Throwdown'},
-    correct: Boolean,
-    requested: Date,
-    submitted: Date,
   }]
 }, {toObject: {virtuals:  true}})
 

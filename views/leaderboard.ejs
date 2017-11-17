@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# medium-com: http://ogp.me/ns/fb/medium-com#">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>
+    <%- meta.name + ' Leaderboard'%>
+  </title>
+  <%- `<link rel="canonical" href="https://b42dc345.ngrok.io/leaderboards/${meta._id}"</link>` %>
+  <%- `<meta name="title" content='Throwdown "${meta.name}" Leaderboard' />` %>
+  <%- `<meta name="description" content="Let's see who's in the lead!" />` %>
+  <%- `<meta property="og:title" content="Let's see who's in the lead!" />` %>
+  <%- `<meta property="og:url" content="https://b42dc345.ngrok.io/leaderboards/${meta._id}" />` %>
+  <%- `<meta property="og:image" content="https://b42dc345.ngrok.io/leaderboards/images/${meta._id}.png" />` %>
+  <%- `<meta property="og:description" content="Let's see who's in the lead!" />` %>
+  <meta property="og:type" content="image" />
+</head>
+
+<body>
+  <%- html %>
+</body>
+
+</html>

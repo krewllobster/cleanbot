@@ -19,21 +19,23 @@ module.exports = async (payload, action, deps) => {
 
   const { slack, dbInterface, commandFactory, exec, user } = deps
 
-  const fullThrowdown = await findFullThrowdown(deps, {
-    matchFields: {_id: throwdown_id}
-  })
+  const findResponse = commandFactory('db').setEntity('Response').setOperation('findOne')
+    .setMatch({throwdown: throwdown_id, user: user._id, question: question._id}).save()
 
-  const hasResponse = fullThrowdown.responses
-    .filter(r => r.user.toString() === user._id.toString())
-    .some(r => r.question._id.toString() === question._id.toString())
+  const existingResponse = await exec.one(dbInterface, findResponse)
+  console.log(existingResponse)
+  let hasResponse = false
 
-  const attachment = singleQuestion(JSON.parse(action.value))
+  if(existingResponse) hasResponse = true
+
+  const newQuestion = singleQuestion({throwdown_id, round, question, channel})
 
   const sendQuestion = commandFactory('slack').setOperation('ephemeralMessage')
     .setUser(user_id).setChannel(channel)
-    .setAttachments(hasResponse ? [] : attachment)
+    .setAttachments(hasResponse ? [] : newQuestion)
     .setText(hasResponse ? `You've already answered this!` : '')
     .save()
+
 
   exec.one(slack, sendQuestion)
 }

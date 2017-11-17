@@ -6,5 +6,6 @@ module.exports = {
   acceptInviteButtons: require('./acceptInviteButtons'),
   selectQuestionButtons: require('./selectQuestionButtons'),
   singleQuestion: require('./singleQuestion'),
-  getQuestions: require('./getQuestions')
+  getQuestions: require('./getQuestions'),
+  genLeaderboard: require('./genLeaderboard'),
 }
