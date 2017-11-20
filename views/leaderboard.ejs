@@ -7,14 +7,13 @@
   <title>
     <%- meta.name + ' Leaderboard'%>
   </title>
-  <%- `<link rel="canonical" href="https://b42dc345.ngrok.io/leaderboards/${meta._id}"</link>` %>
-  <%- `<meta name="title" content='Throwdown "${meta.name}" Leaderboard' />` %>
-  <%- `<meta name="description" content="Let's see who's in the lead!" />` %>
-  <%- `<meta property="og:title" content="Let's see who's in the lead!" />` %>
-  <%- `<meta property="og:url" content="https://b42dc345.ngrok.io/leaderboards/${meta._id}" />` %>
-  <%- `<meta property="og:image" content="https://b42dc345.ngrok.io/leaderboards/images/${meta._id}.png" />` %>
-  <%- `<meta property="og:description" content="Let's see who's in the lead!" />` %>
-  <meta property="og:type" content="image" />
+  <%-`<link rel="canonical" href="https://b42dc345.ngrok.io/leaderboards/${meta._id}"</link>
+      <meta name="title" content='Throwdown "${meta.name}" Leaderboard' />
+      <meta name="description" content="Let's see who's in the lead!" />
+      <meta property="og:title" content="Let's see who's in the lead!" />
+      <meta property="og:url" content="https://b42dc345.ngrok.io/leaderboards/${meta._id}" />
+      <meta property="og:description" content="Let's see who's in the lead!" />` %>
+    <meta property="og:type" content="image" />
 </head>
 
 <body>
