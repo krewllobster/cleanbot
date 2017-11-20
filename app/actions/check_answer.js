@@ -64,7 +64,7 @@ module.exports = async (payload, action, deps) => {
     : `Whoops...you spent ${duration} seconds thinking...only to get it wrong`;
 
   if (attachments[0].actions.length === 0) {
-    answerText += `\nYou're out of questions. Check out your leaderboard here: https://a9435379.ngrok.io/leaderboards/${throwdown_id}`;
+    answerText += `\nYou're out of questions. Check out your leaderboard here: https://peaceful-stream-90290.herokuapp.com/leaderboards/${throwdown_id}`;
   }
 
   const newAnswer = commandFactory('slack')
