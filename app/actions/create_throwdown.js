@@ -52,7 +52,7 @@ module.exports = async (payload, submission, deps) => {
     const getGroupList = commandFactory('slack').setClient('userClient')
       .setOperation('getChannels').save()
 
-    const channelName = name.split(' ').join('_')
+    const channelName = name.split(' ').join('_').toLowerCase()
 
     if(channelName.match(/[^(a-z|0-9|_|\-)]/) || channelName.length > 21) {
       console.log('throwdown title had invalid character or was too long')
@@ -123,7 +123,7 @@ module.exports = async (payload, submission, deps) => {
       user,
     })
 
-  questionsJob.repeatEvery('2 minutes')
+  questionsJob.repeatEvery('12 hours')
   questionsJob.save()
 }
 
@@ -131,7 +131,7 @@ const initChannel = async (throwdown, deps) => {
   console.log('initializing throwdown channel')
   return new Promise(async (resolve, reject) => {
     const {slack, dbInterface, commandFactory, exec, user} = deps
-    const name = throwdown.name.split(' ').join('_')
+    const name = throwdown.name.split(' ').join('_').toLowerCase()
 
     const createChannel = commandFactory('slack').setOperation('createConversation')
       .set({name, private: true}).setClient('userClient').save()

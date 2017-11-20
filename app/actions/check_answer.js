@@ -1,16 +1,16 @@
-const {findFullThrowdown} = require('../common')
-const {selectQuestionButtons, genLeaderboard} = require('../attachments')
-const {Response} = require('../models')
+const { findFullThrowdown } = require('../common');
+const { selectQuestionButtons, genLeaderboard } = require('../attachments');
+const { Response } = require('../models');
 
 module.exports = async (payload, action, deps) => {
-  console.log('checking answers')
+  console.log('checking answers');
   const {
-    user: {id: user_id},
-    team: {id: team_id},
+    user: { id: user_id },
+    team: { id: team_id },
     message_ts,
-    channel: {id: channel_id},
-    original_message,
-  } = payload
+    channel: { id: channel_id },
+    original_message
+  } = payload;
 
   const {
     throwdown_id,
@@ -19,20 +19,21 @@ module.exports = async (payload, action, deps) => {
     question,
     correct,
     requested
-  } = JSON.parse(action.value)
+  } = JSON.parse(action.value);
 
-  const { slack, dbInterface, commandFactory, exec, user } = deps
+  const { slack, dbInterface, commandFactory, exec, user } = deps;
 
-  const submitted = new Date()
+  const submitted = new Date();
 
-  let duration = ((new Date(submitted).getTime()) - (new Date(requested).getTime()))/1000
-  duration = parseFloat(duration.toFixed(3))
+  let duration =
+    (new Date(submitted).getTime() - new Date(requested).getTime()) / 1000;
+  duration = parseFloat(duration.toFixed(3));
 
-  const {created, doc: newResponse} = await Response.findOrCreate(
+  const { created, doc: newResponse } = await Response.findOrCreate(
     {
       user: user._id,
       question: question._id,
-      throwdown: throwdown_id,
+      throwdown: throwdown_id
     },
     {
       category: question.category,
@@ -40,32 +41,39 @@ module.exports = async (payload, action, deps) => {
       round,
       requested,
       submitted,
-      duration,
+      duration
     }
-  )
-  await genLeaderboard(throwdown_id)
+  );
+  await genLeaderboard(throwdown_id);
 
   if (!created) {
-
-    const alreadyAnswered = commandFactory('slack').setOperation('ephemeralMessage')
-      .setChannel(channel_id).setUser(user_id)
+    const alreadyAnswered = commandFactory('slack')
+      .setOperation('ephemeralMessage')
+      .setChannel(channel_id)
+      .setUser(user_id)
       .setText('You have already answered this question!')
-      .save()
+      .save();
 
-    return await exec.one(slack, alreadyAnswered)
+    return await exec.one(slack, alreadyAnswered);
   }
 
+  let attachments = await selectQuestionButtons(throwdown_id, round, deps);
 
-  const attachments = await selectQuestionButtons(throwdown_id, round, deps)
-
-  const answerText = correct
+  let answerText = correct
     ? `Congratulations! You answered correctly in ${duration} seconds!`
-    : `Whoops...you spent ${duration} seconds thinking...only to get it wrong`
+    : `Whoops...you spent ${duration} seconds thinking...only to get it wrong`;
 
-  const newAnswer = commandFactory('slack').setOperation('ephemeralMessage')
-    .setChannel(channel_id).setUser(user_id)
-    .setText(answerText).setAttachments(attachments)
-    .save()
+  if (attachments[0].actions.length === 0) {
+    answerText += `\nYou're out of questions. Check out your leaderboard here: https://a9435379.ngrok.io/leaderboards/${throwdown_id}`;
+  }
 
-  exec.one(slack, newAnswer)
-}
+  const newAnswer = commandFactory('slack')
+    .setOperation('ephemeralMessage')
+    .setChannel(channel_id)
+    .setUser(user_id)
+    .setText(answerText)
+    .setAttachments(attachments)
+    .save();
+
+  exec.one(slack, newAnswer);
+};

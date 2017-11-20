@@ -45,7 +45,7 @@ const genLeaderBoard = async (throwdown_id) => {
   const byUsersByPoints = allData.map(d => {
     const {user, round, question, correct} = d._id
     const {count, average, time} = d
-    let points = (correct ? 50 : -20) - parseFloat(d.time.toFixed(0))
+    let points = (correct ? 50 : 0) - parseFloat(d.time.toFixed(0))
     if(correct && points <= 10) points = 10
     if(!correct && points <= -20) points = -20
     return {

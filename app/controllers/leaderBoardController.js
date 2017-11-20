@@ -106,10 +106,10 @@ module.exports = async (req, res) => {
 
   const html = d3n.svgString()
   console.log(html)
-  const svgBuffer = new Buffer(html)
-  await sharp(svgBuffer)
-    .toFile('./leaderboards/' + throwdownId + '.png')
-    .catch(err => console.log(err))
+  // const svgBuffer = new Buffer(html)
+  // await sharp(svgBuffer)
+  //   .toFile('./leaderboards/' + throwdownId + '.png')
+  //   .catch(err => console.log(err))
 
 
   // res.sendFile(path.join(__dirname, '../../leaderboards', req.params['0'] + '.png'))
