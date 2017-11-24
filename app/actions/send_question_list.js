@@ -18,6 +18,7 @@ module.exports = async (payload, action, deps) => {
     Choose a difficulty below to get this round's questions. We'll start timing you when you select a difficulty, and stop the timer when you select an answer.
 After you give an answer, you'll see this message again with your remaining questions.\nGood luck!!
   `;
+
   const noMoreQuestionText = `Look's like you're out of questions for round ${round}!`;
 
   const questionsToAttach = await selectQuestionButtons(
@@ -25,8 +26,8 @@ After you give an answer, you'll see this message again with your remaining ques
     round,
     deps
   );
-
-  const questionNumber = questionsToAttach.actions[0].name;
+  console.log('going to ask');
+  console.log(questionsToAttach);
 
   const sendQuestions = commandFactory('slack')
     .setOperation('ephemeralMessage')
