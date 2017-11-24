@@ -25,14 +25,15 @@ After you give an answer, you'll see this message again with your remaining ques
     round,
     deps
   );
-  const questionNumber = questionsToAttach.actions.length;
+
+  const questionNumber = questionsToAttach.actions[0].name;
 
   const sendQuestions = commandFactory('slack')
     .setOperation('ephemeralMessage')
     .setChannel(channel_id)
     .setUser(user_id)
     .setAttachments(questionsToAttach)
-    .setText(questionNumber > 0 ? questionButtonText : noMoreQuestionText)
+    .setText(questionNumber ? questionButtonText : noMoreQuestionText)
     .save();
 
   exec.one(slack, sendQuestions);

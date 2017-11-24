@@ -1,46 +1,55 @@
 module.exports = async (throwdown_id, round, deps) => {
-  const { slack, dbInterface, commandFactory, exec, user } = deps
+  const { slack, dbInterface, commandFactory, exec, user } = deps;
 
-  const getResponses = commandFactory('db').setEntity('Response')
-    .setOperation('find').setMatch({
+  const getResponses = commandFactory('db')
+    .setEntity('Response')
+    .setOperation('find')
+    .setMatch({
       throwdown: throwdown_id,
       user: user._id,
-      round,
+      round
     })
     .setPopulate('question')
-    .save()
+    .save();
 
-  const getQuestions = commandFactory('db').setEntity('Throwdown')
-    .setOperation('findOne').setMatch({_id: throwdown_id, 'questions.round': round})
-    .setPopulate([{path: 'questions.question', model: 'Question'}])
-    .save()
+  const getQuestions = commandFactory('db')
+    .setEntity('Throwdown')
+    .setOperation('findOne')
+    .setMatch({ _id: throwdown_id, 'questions.round': round })
+    .setPopulate([{ path: 'questions.question', model: 'Question' }])
+    .save();
 
-  const [responses, throwdown] = await exec.many([[dbInterface, getResponses], [dbInterface, getQuestions]])
+  const [responses, throwdown] = await exec.many([
+    [dbInterface, getResponses],
+    [dbInterface, getQuestions]
+  ]);
 
-  const answeredQuestionIds = responses.map(r => r.question._id.toString())
+  const answeredQuestionIds = responses.map(r => r.question._id.toString());
 
   const actions = throwdown.questions
     .filter(q => q.round === round)
     .filter(q => !answeredQuestionIds.includes(q.question._id.toString()))
     .map(q => {
-        return {
-          name: q.question.difficulty,
-          text: `Round ${q.round}: ${q.question.difficulty}`,
-          value: JSON.stringify({
-            throwdown_id: throwdown_id,
-            channel: throwdown.channel,
-            question: q.question,
-            round: round,
-          }),
-          type: 'button'
-        }
-      })
+      return {
+        name: q.question.difficulty,
+        text: `Round ${q.round}: ${q.question.difficulty}`,
+        value: JSON.stringify({
+          throwdown_id: throwdown_id,
+          channel: throwdown.channel,
+          question: q.question,
+          round: round
+        }),
+        type: 'button'
+      };
+    });
 
-  return [{
-    text: '',
-    callback_id: 'send_question',
-    actions
-  }]
+  return [
+    {
+      text: '',
+      callback_id: 'send_question',
+      actions
+    }
+  ];
   // const actions = questions
   //   //only look at this round's questions
   //   .filter(q => q.round === round)
@@ -70,5 +79,5 @@ module.exports = async (throwdown_id, round, deps) => {
   //     actions
   //   }
   // ]
-  return []
-}
+  // return []
+};
