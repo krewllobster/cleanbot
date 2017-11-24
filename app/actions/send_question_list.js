@@ -33,7 +33,7 @@ After you give an answer, you'll see this message again with your remaining ques
     .setChannel(channel_id)
     .setUser(user_id)
     .setAttachments(questionsToAttach)
-    .setText(questionNumber ? questionButtonText : noMoreQuestionText)
+    .setText(questionButtonText)
     .save();
 
   exec.one(slack, sendQuestions);
