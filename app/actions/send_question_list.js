@@ -25,7 +25,7 @@ After you give an answer, you'll see this message again with your remaining ques
     round,
     deps
   );
-  const questionNumber = questionsToAttach.length;
+  const questionNumber = questionsToAttach.actions.length;
 
   const sendQuestions = commandFactory('slack')
     .setOperation('ephemeralMessage')
