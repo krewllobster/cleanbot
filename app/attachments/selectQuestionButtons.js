@@ -43,6 +43,19 @@ module.exports = async (throwdown_id, round, deps) => {
       };
     });
 
+  actions.push({
+    name: 'bonus',
+    text: `Round ${round} Bonus`,
+    style: 'primary',
+    type: 'button',
+    value: JSON.stringify({
+      throwdown_id: throwdown_id,
+      channel: throwdown.channel,
+      question: {},
+      round: round
+    })
+  });
+
   return [
     {
       text: '',

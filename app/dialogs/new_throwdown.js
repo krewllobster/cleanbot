@@ -1,16 +1,16 @@
-const moment = require('moment')
+const moment = require('moment');
 
-module.exports = (categories) => {
-  let dates = []
+module.exports = categories => {
+  let dates = [];
 
   //minutes
   for (i = 1; i < 5; i++) {
-    let d = moment().add(i*30, 'seconds')
+    let d = moment().add(i * 30, 'seconds');
     let date = {
-      label: `${i*30} seconds from now`,
+      label: `${i * 30} seconds from now`,
       value: d
-    }
-    dates.push(date)
+    };
+    dates.push(date);
   }
 
   //use days
@@ -27,15 +27,16 @@ module.exports = (categories) => {
   // }
 
   return JSON.stringify({
-    "callback_id": "create_throwdown",
-    "title": 'Create New Throwdown',
-    "submit_label": "Create!",
-    "elements": [
+    callback_id: 'create_throwdown',
+    title: 'Create New Throwdown',
+    submit_label: 'Create!',
+    elements: [
       {
         type: 'text',
         name: 'name',
         label: 'Throwdown Name',
         placeholder: `My first challenge!`,
+        hint: `no numbers or symbols please!`,
         max_length: 21
       },
       {
@@ -44,30 +45,31 @@ module.exports = (categories) => {
         label: 'Short Description',
         optional: true,
         placeholder: `Redemption for last week's musical theater Throwdown fiasco`,
-        max_length: 150,
+        max_length: 150
       },
       {
-        type: "select",
+        type: 'select',
         label: 'Question Category',
         name: 'category',
         placeholder: `What is the subject of this Throwdown?`,
-        options: categories,
+        options: categories
       },
       {
-          "type": "select",
-          "label": "Who can join?",
-          "name": "privacy",
-          options: [
-            {label: "Anyone! (public)", value: 'public'},
-            {label: "Only people I invite. (private)", value: 'private'}
-          ],
+        type: 'select',
+        label: 'Who can join?',
+        name: 'privacy',
+        options: [
+          { label: 'Anyone! (public)', value: 'public' },
+          { label: 'Only people I invite. (private)', value: 'private' }
+        ]
       },
       {
         type: 'select',
         label: 'Start Date',
         name: 'start_date',
         placeholder: 'Select the first day of this Throwdown',
-        options: dates,
+        options: dates
       }
     ]
-})}
+  });
+};

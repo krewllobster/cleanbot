@@ -1,33 +1,32 @@
-const random = (max) => Math.floor(Math.random() * (max + 1))
+const random = max => Math.floor(Math.random() * (max + 1));
 
-const shuffle = (a) => {
-  let length = a.length
-  const shuffled = Array(length)
+const shuffle = a => {
+  let length = a.length;
+  const shuffled = Array(length);
   for (let i = 0, rand; i < length; ++i) {
-    rand = random(i)
-    if (rand !== i) shuffled[i] = shuffled[rand]
-    shuffled[rand] = a[i]
+    rand = random(i);
+    if (rand !== i) shuffled[i] = shuffled[rand];
+    shuffled[rand] = a[i];
   }
-  return shuffled
-}
+  return shuffled;
+};
 
 const findRandom = (array, limit) => {
+  let count = array.length;
 
-  let count = array.length
+  if (count < limit) limit = array.length;
 
-  if (count < limit) limit = array.length
+  let selected = [];
 
-  let selected = []
-
-  for(i = 0; i < limit; ++i) {
-    array = shuffle(array)
-    selected.push(array.pop())
+  for (i = 0; i < limit; ++i) {
+    array = shuffle(array);
+    selected.push(array.pop());
   }
 
-  return selected
-}
+  return selected;
+};
 
 module.exports = {
   findRandom,
   shuffle
-}
+};

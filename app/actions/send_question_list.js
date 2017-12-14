@@ -26,8 +26,13 @@ After you give an answer, you'll see this message again with your remaining ques
     round,
     deps
   );
+
   console.log('going to ask');
   console.log(questionsToAttach);
+
+  if (questionsToAttach[0].actions.length == 0) {
+    questionButtonText = `Look's like you've already answered all of the round ${round} questions!`;
+  }
 
   const sendQuestions = commandFactory('slack')
     .setOperation('ephemeralMessage')
