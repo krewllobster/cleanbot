@@ -59,7 +59,7 @@ module.exports = async (throwdown_id, round, deps) => {
   return [
     {
       text: '',
-      callback_id: 'send_question',
+      callback_id: 'send_bonus',
       actions
     }
   ];

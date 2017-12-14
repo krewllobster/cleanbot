@@ -5,5 +5,6 @@ module.exports = {
   create_throwdown: require('./create_throwdown'),
   send_question: require('./send_question'),
   check_answer: require('./check_answer'),
-  send_question_list: require('./send_question_list')
-}
+  send_question_list: require('./send_question_list'),
+  send_bonus: require('./send_bonus')
+};
