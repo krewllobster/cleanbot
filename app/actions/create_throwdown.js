@@ -156,7 +156,7 @@ const initChannel = async (throwdown, deps) => {
       .setClient('userClient')
       .save();
 
-    const { creator, channel } = await exec.one(slack, createChannel);
+    const { channel } = await exec.one(slack, createChannel);
 
     const setThrowdownChannel = commandFactory('db')
       .setEntity('Throwdown')
@@ -195,7 +195,7 @@ const initChannel = async (throwdown, deps) => {
 
     let usersToInvite = bot_user_id;
 
-    if (throwdown.created_by.user_id !== creator) {
+    if (throwdown.created_by.user_id !== channel.creator) {
       usersToInvite += `,${throwdown.created_by.user_id}`;
     }
 
@@ -214,10 +214,12 @@ const initChannel = async (throwdown, deps) => {
 
 const initQuestions = (throwdown, deps) => {
   console.log('initializing throwdown questions');
+
   const errorHandle = err => {
     console.log(err);
     throw new Error('error creating throwdown::' + err);
   };
+
   return new Promise(async (resolve, reject) => {
     const { slack, dbInterface, commandFactory, exec, user } = deps;
     const categories = throwdown.categories.map(c => c._id);

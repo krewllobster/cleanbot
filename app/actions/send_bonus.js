@@ -11,11 +11,16 @@ module.exports = async (payload, action, deps) => {
 
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
-  const message = commandFactory('slack')
-    .setOperation('basicMessage')
-    .setChannel(channel_id)
-    .setText('bonus pressed')
+  //find existing user data responses
+  //filter out already asked questions
+
+  const getBonusQuestions = commandFactory('db')
+    .setEntity('Bonus')
+    .setOperation('find')
+    .setMatch({})
     .save();
 
-  await exec.one(slack, message);
+  const bonusQuestions = await exec.one(dbInterface, getBonusQuestions);
+
+  console.log(bonusQuestions);
 };

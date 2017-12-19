@@ -14,7 +14,7 @@ module.exports = async (payload, action, deps) => {
   const { channel, bonus, round, question, throwdown_id } = JSON.parse(
     action.value
   );
-
+  console.log(action.value);
   if (bonus) {
     return sendBonus(payload, action, deps);
   }
