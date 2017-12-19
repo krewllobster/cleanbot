@@ -11,5 +11,11 @@ module.exports = async (payload, action, deps) => {
 
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
-  console.log('bonus pressed');
+  const message = commandFactory('slack')
+    .setOperation('basicMessage')
+    .setChannel(channel_id)
+    .setText('bonus pressed')
+    .save();
+
+  await exec.one(slack, message);
 };
