@@ -83,21 +83,9 @@ const populateQuestions = async () => {
 };
 
 const populateBonus = async () => {
-  bonus_one = {
-    text: `What is your favorite time of day?`,
-    options: [`morning`, `afternoon`, `evening`, `night`],
-    responses: [],
-    type: 'mc'
-  };
-
-  bonus_two = {
-    text: `What is your favorite season?`,
-    options: ['spring', 'summer', 'autumn', 'winter'],
-    responses: [],
-    type: 'mc'
-  };
-
-  const result = await Bonus.insertMany([bonus_one, bonus_two]);
+  const { allBonus } = require('./bonusQuestions');
+  console.log(allBonus);
+  const result = await Bonus.insertMany(allBonus);
 
   console.log(result);
   process.exit();

@@ -36,6 +36,7 @@ module.exports = async (throwdown_id, round, deps) => {
         value: JSON.stringify({
           throwdown_id: throwdown_id,
           channel: throwdown.channel,
+          bonus: false,
           question: q.question,
           round: round
         }),
@@ -50,8 +51,9 @@ module.exports = async (throwdown_id, round, deps) => {
     type: 'button',
     value: JSON.stringify({
       throwdown_id: throwdown_id,
+      bonus: true,
+      question: null,
       channel: throwdown.channel,
-      question: {},
       round: round
     })
   });
@@ -59,7 +61,7 @@ module.exports = async (throwdown_id, round, deps) => {
   return [
     {
       text: '',
-      callback_id: 'send_bonus',
+      callback_id: 'send_question',
       actions
     }
   ];
