@@ -14,8 +14,9 @@ module.exports = async (payload, action, deps) => {
   const { channel, bonus, round, question, throwdown_id } = JSON.parse(
     action.value
   );
-  console.log(action.value);
+
   if (bonus) {
+    console.log('sending bonus');
     return sendBonus(payload, action, deps);
   }
 
@@ -32,7 +33,7 @@ module.exports = async (payload, action, deps) => {
     .save();
 
   const existingResponse = await exec.one(dbInterface, findResponse);
-  console.log(existingResponse);
+
   let hasResponse = false;
 
   if (existingResponse) hasResponse = true;

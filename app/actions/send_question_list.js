@@ -11,15 +11,8 @@ module.exports = async (payload, action, deps) => {
   } = payload;
 
   const { throwdown_id, round } = JSON.parse(action.value);
-
+  console.log('requesting round: ', round);
   const { slack, dbInterface, commandFactory, exec, user } = deps;
-
-  const questionButtonText = `
-    Choose a difficulty below to get this round's questions. We'll start timing you when you select a difficulty, and stop the timer when you select an answer.
-After you give an answer, you'll see this message again with your remaining questions.\nGood luck!!
-  `;
-
-  const noMoreQuestionText = `Look's like you're out of questions for round ${round}!`;
 
   const questionsToAttach = await selectQuestionButtons(
     throwdown_id,
@@ -27,10 +20,15 @@ After you give an answer, you'll see this message again with your remaining ques
     deps
   );
 
-  console.log('going to ask');
-  console.log(questionsToAttach);
+  let questionButtonText = `
+    Choose a difficulty below to get this round's questions. We'll start timing you when you select a difficulty, and stop the timer when you select an answer.
+After you give an answer, you'll see this message again with your remaining questions.\nGood luck!!
+  `;
 
-  if (questionsToAttach[0].actions.length == 0) {
+  console.log(questionsToAttach);
+  const noQuestions = questionsToAttach.callback_id === 'send_question_list';
+
+  if (noQuestions) {
     questionButtonText = `Look's like you've already answered all of the round ${round} questions!`;
   }
 
@@ -42,5 +40,5 @@ After you give an answer, you'll see this message again with your remaining ques
     .setText(questionButtonText)
     .save();
 
-  exec.one(slack, sendQuestions);
+  exec.one(slack, sendQuestions).catch(e => console.log(e));
 };

@@ -5,5 +5,6 @@ module.exports = {
   Category: require('./category'),
   Question: require('./question'),
   Response: require('./response'),
-  Bonus: require('./bonus')
+  Bonus: require('./bonus'),
+  UserData: require('./userData')
 };

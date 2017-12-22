@@ -136,7 +136,7 @@ module.exports = async (payload, submission, deps) => {
     user
   });
 
-  questionsJob.repeatEvery('12 hours');
+  questionsJob.repeatEvery('2 minutes');
   questionsJob.save();
 };
 

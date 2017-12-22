@@ -1,3 +1,5 @@
+const { formatBonusQuestion } = require('../attachments');
+
 module.exports = async (payload, action, deps) => {
   const {
     user: { id: user_id },
@@ -13,6 +15,11 @@ module.exports = async (payload, action, deps) => {
 
   //find existing user data responses
   //filter out already asked questions
+  const getUserData = commandFactory('db')
+    .setEntity('UserData')
+    .setMatch({ user_id, team_id, throwdown: throwdown_id })
+    .setOperation('find')
+    .save();
 
   const getBonusQuestions = commandFactory('db')
     .setEntity('Bonus')
@@ -20,7 +27,59 @@ module.exports = async (payload, action, deps) => {
     .setMatch({})
     .save();
 
-  const bonusQuestions = await exec.one(dbInterface, getBonusQuestions);
+  // const bonusQuestions = await exec.one(dbInterface, getBonusQuestions);
+  // const userData = await exec.one(dbInterface, getUserData);
+  const [bonusQuestions, userData] = await exec
+    .many([[dbInterface, getBonusQuestions], [dbInterface, getUserData]])
+    .catch(err => console.log(err));
 
-  console.log(bonusQuestions);
+  const responses = userData.map(d => d.bonus.toString());
+
+  const alreadyAsked = userData.find(
+    d => d.throwdown.toString() === throwdown_id.toString() && d.round === round
+  );
+
+  console.log('already asked', alreadyAsked);
+  if (alreadyAsked) {
+    const alreadyDoneMessage = commandFactory('slack')
+      .setOperation('ephemeralMessage')
+      .setUser(user_id)
+      .setChannel(channel_id)
+      .setText(`You've already answered a bonus for this round!`)
+      .save();
+
+    return await exec.one(slack, alreadyDoneMessage);
+  }
+
+  const notAsked = bonusQuestions.filter(
+    b => !responses.includes(b._id.toString())
+  );
+
+  //TODO: ADD QUESTIONS IF NO BONUSES LEFT OR IF ROUND%2 == 0
+  if (notAsked.length === 0 || round % 2 === 0) {
+    const willAddLater = commandFactory('slack')
+      .setOperation('ephemeralMessage')
+      .setText('placeholder for question about coworkers')
+      .setUser(user_id)
+      .setChannel(channel_id)
+      .save();
+
+    return await exec.one(slack, willAddLater);
+  }
+
+  const bonusAttachment = formatBonusQuestion(notAsked[0], {
+    user,
+    throwdown: throwdown_id,
+    round
+  });
+
+  const bonusMessage = commandFactory('slack')
+    .setOperation('ephemeralMessage')
+    .setUser(user_id)
+    .setChannel(channel_id)
+    .setText('')
+    .setAttachments(bonusAttachment)
+    .save();
+
+  return await exec.one(slack, bonusMessage);
 };

@@ -1,21 +1,29 @@
-
 const dbInterface = () => {
-  const models = require('../models')
+  const models = require('../models');
 
   return {
     name: 'mongoDB interface',
-    execute: ({entity, operation, match, update, options, populate}) => {
-      if(models[entity] && models[entity][operation]) {
-        if(populate) {
-          return models[entity][operation](match, update, options)
-            .populate(populate).exec()
+    execute: async ({
+      entity,
+      operation,
+      match,
+      update,
+      options,
+      populate
+    }) => {
+      if (models[entity] && models[entity][operation]) {
+        if (populate) {
+          return models[entity]
+            [operation](match, update, options)
+            .populate(populate)
+            .exec();
         }
-        return models[entity][operation](match, update, options)
+        return await models[entity][operation](match, update, options);
       } else {
-        return new Error('model or operation does not exist')
+        return new Error('model or operation does not exist');
       }
     }
-  }
-}
+  };
+};
 
-module.exports = dbInterface()
+module.exports = dbInterface();

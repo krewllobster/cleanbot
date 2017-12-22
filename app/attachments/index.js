@@ -1,5 +1,3 @@
-
-
 module.exports = {
   throwdownInvite: require('./throwdownInvite'),
   singleThrowdown: require('./singleThrowdown'),
@@ -8,4 +6,6 @@ module.exports = {
   singleQuestion: require('./singleQuestion'),
   getQuestions: require('./getQuestions'),
   genLeaderboard: require('./genLeaderboard'),
-}
+  formatBonusQuestion: require('./formatBonusQuestion'),
+  questionRoundButton: require('./questionRoundButton')
+};

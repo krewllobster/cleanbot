@@ -1,56 +1,69 @@
-const {
-  commandFactory,
-  dbInterface,
-  slackApi,
-  exec
-} = require('../domains')
+const { commandFactory, dbInterface, slackApi, exec } = require('../domains');
 
-const { findFullThrowdown } = require('../common')
-const { getQuestions } = require('../attachments')
+const { findFullThrowdown } = require('../common');
+const { getQuestions } = require('../attachments');
 
-module.exports = function (agenda) {
+module.exports = function(agenda) {
   agenda.define('send question buttons', async (job, done) => {
-    console.log('starting send questions job')
-    const {throwdown_id, team_id, user} = job.attrs.data
+    console.log('starting send questions job');
+    const { throwdown_id, team_id, user } = job.attrs.data;
 
-    const deps = {exec, commandFactory, dbInterface}
+    const deps = { exec, commandFactory, dbInterface };
 
-    const getKeys = commandFactory('db').setOperation('findOne')
-      .setEntity('Team').setMatch({team_id}).save()
+    const getKeys = commandFactory('db')
+      .setOperation('findOne')
+      .setEntity('Team')
+      .setMatch({ team_id })
+      .save();
 
     const {
       access_token: user_token,
-      bot: {bot_access_token: bot_token}
-    } = await exec.one(dbInterface, getKeys)
+      bot: { bot_access_token: bot_token }
+    } = await exec.one(dbInterface, getKeys);
 
-    slack = slackApi({user_token, bot_token})
+    slack = slackApi({ user_token, bot_token });
 
-    deps.slack = slack
+    deps.slack = slack;
 
     const fullThrowdown = await findFullThrowdown(deps, {
-      matchFields: {_id: throwdown_id},
-      updateFields: {$inc: {round: 1}}
-    })
+      matchFields: { _id: throwdown_id },
+      updateFields: { $inc: { round: 1 } }
+    });
+
+    console.log('full throwdown found. round is: ', fullThrowdown.round);
 
     if (fullThrowdown.round > 10) {
-      console.log('throwdown round is past 10, need to terminate job')
-      return done()
+      console.log('throwdown round is past 10, need to terminate job');
+      return done();
     }
 
-    const sendQuestions = commandFactory('slack').setOperation('basicMessage')
-      .setAttachments(getQuestions(fullThrowdown, user))
+    const questionButton = getQuestions(fullThrowdown, user);
+    console.log('questionButton');
+    console.log(questionButton);
+    const sendQuestions = commandFactory('slack')
+      .setOperation('basicMessage')
+      .setAttachments([questionButton])
       .setChannel(fullThrowdown.channel)
-      .save()
+      .save();
 
-    const {ts} = await exec.one(slack, sendQuestions)
+    console.log('send question command', sendQuestions);
 
-    const pinQuestions = commandFactory('slack').setOperation('addPin')
-      .setChannel(fullThrowdown.channel).setTs(ts).save()
+    const { ts } = await exec
+      .one(slack, sendQuestions)
+      .catch(e => console.log(e));
 
-    exec.one(slack, pinQuestions)
+    console.log('returned timestamp: ', ts);
 
-    console.log('questions sent')
+    const pinQuestions = commandFactory('slack')
+      .setOperation('addPin')
+      .setChannel(fullThrowdown.channel)
+      .setTs(ts)
+      .save();
 
-    done()
-  })
-}
+    await exec.one(slack, pinQuestions);
+
+    console.log('questions sent');
+
+    done();
+  });
+};
