@@ -17,7 +17,7 @@ module.exports = async (payload, action, deps) => {
   //filter out already asked questions
   const getUserData = commandFactory('db')
     .setEntity('UserData')
-    .setMatch({ user_id, team_id, throwdown: throwdown_id })
+    .setMatch({ user_id, team_id })
     .setOperation('find')
     .save();
 
@@ -27,19 +27,17 @@ module.exports = async (payload, action, deps) => {
     .setMatch({})
     .save();
 
-  // const bonusQuestions = await exec.one(dbInterface, getBonusQuestions);
-  // const userData = await exec.one(dbInterface, getUserData);
   const [bonusQuestions, userData] = await exec
     .many([[dbInterface, getBonusQuestions], [dbInterface, getUserData]])
     .catch(err => console.log(err));
 
   const responses = userData.map(d => d.bonus.toString());
+  console.log(responses);
 
-  const alreadyAsked = userData.find(
-    d => d.throwdown.toString() === throwdown_id.toString() && d.round === round
+  const alreadyAsked = userData.filter(
+    d => d.throwdown.toString() == throwdown_id && d.round == round
   );
 
-  console.log('already asked', alreadyAsked);
   if (alreadyAsked) {
     const alreadyDoneMessage = commandFactory('slack')
       .setOperation('ephemeralMessage')

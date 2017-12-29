@@ -1,17 +1,43 @@
 const moment = require('moment');
 
 module.exports = categories => {
-  let dates = [];
+  let dates = [
+    {
+      label: `In 2 minutes`,
+      value: JSON.stringify({ count: 1, units: 'm' })
+    },
+    {
+      label: 'In 5 minutes',
+      value: JSON.stringify({ count: 5, units: 'm' })
+    },
+    {
+      label: `In 1 hour`,
+      value: JSON.stringify({ count: 1, units: 'h' })
+    },
+    {
+      label: 'In 6 hours',
+      value: JSON.stringify({ count: 6, units: 'h' })
+    },
+    {
+      label: 'In 1 day',
+      value: JSON.stringify({ count: 1, units: 'd' })
+    },
+    {
+      label: 'In 2 days',
+      value: JSON.stringify({ count: 2, units: 'd' })
+    }
+  ];
 
+  console.log(dates);
   //minutes
-  for (i = 1; i < 5; i++) {
-    let d = moment().add(i * 30, 'seconds');
-    let date = {
-      label: `${i * 30} seconds from now`,
-      value: d
-    };
-    dates.push(date);
-  }
+  // for (i = 1; i < 5; i++) {
+  //   let d = moment().add(i, 'minutes');
+  //   let date = {
+  //     label: `In ${i} minute${i > 1 ? 's' : ''}`,
+  //     value: d
+  //   };
+  //   dates.push(date);
+  // }
 
   //use days
   // for (i = 1; i < 8; i++) {
@@ -67,7 +93,7 @@ module.exports = categories => {
         type: 'select',
         label: 'Start Date',
         name: 'start_date',
-        placeholder: 'Select the first day of this Throwdown',
+        placeholder: 'When should this throwdown start sending questions?',
         options: dates
       }
     ]

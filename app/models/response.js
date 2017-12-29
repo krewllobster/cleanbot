@@ -1,25 +1,24 @@
-const mongoose = require('mongoose')
-const findOrCreate = require('mongoose-findorcreate')
+const mongoose = require('mongoose');
+const findOrCreate = require('mongoose-findorcreate');
 
 const responseSchema = new mongoose.Schema({
-  question: {type: mongoose.Schema.Types.ObjectId, ref: 'Question'},
-  user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
-  throwdown: {type: mongoose.Schema.Types.ObjectId, ref: 'Throwdown'},
-  category: {type: Number, ref: 'Category', field: '_id'},
+  question: { type: mongoose.Schema.Types.ObjectId, ref: 'Question' },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  throwdown: { type: mongoose.Schema.Types.ObjectId, ref: 'Throwdown' },
+  category: { type: Number, ref: 'Category', field: '_id' },
   correct: Boolean,
+  bonus: { type: Boolean, default: false },
   round: Number,
   requested: Date,
   submitted: Date,
-  duration: Number,
-})
+  duration: Number
+});
 
+responseSchema.plugin(findOrCreate);
 
-responseSchema.plugin(findOrCreate)
+const Response = mongoose.model('Response', responseSchema);
 
-const Response = mongoose.model("Response", responseSchema)
-
-module.exports = Response
-
+module.exports = Response;
 
 // db.responses.aggregate([
 //   {

@@ -1,3 +1,3 @@
 module.exports = {
-  brandColor: '#fd7e08'
+  brandColor: '#112299'
 };

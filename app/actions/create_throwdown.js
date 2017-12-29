@@ -5,6 +5,7 @@ const {
   findFullThrowdown,
   findRandom
 } = require('../common');
+const moment = require('moment');
 
 module.exports = async (payload, submission, deps) => {
   const {
@@ -15,7 +16,9 @@ module.exports = async (payload, submission, deps) => {
 
   const { name, description, category, privacy, start_date } = submission;
   const { slack, dbInterface, commandFactory, exec, user } = deps;
-
+  console.log('*********************');
+  console.log(start_date);
+  const offset = JSON.parse(start_date);
   const processing = processingMessage(deps, {
     text: 'Processing new Throwdown...',
     user_id
@@ -35,7 +38,7 @@ module.exports = async (payload, submission, deps) => {
     created_by: user._id,
     description,
     round: 0,
-    start_date: new Date(start_date),
+    start_date: moment().add(offset.count, offset.units),
     participants: [user._id],
     categories: [category],
     invitees: []
@@ -129,13 +132,15 @@ module.exports = async (payload, submission, deps) => {
     initChannel(throwdown, deps)
   ]);
   //CHANGE QUESTION TIMING HERE
-  console.log('initiating recurring throwdown jobs');
+  console.log('scheduling question job start');
   const questionsJob = agenda.create('send question buttons', {
     throwdown_id: updatedThrowdown._id,
     team_id: team_id,
     user
   });
+  console.log('starting questions at ', updatedThrowdown.start_date);
 
+  questionsJob.schedule(updatedThrowdown.start_date);
   questionsJob.repeatEvery('2 minutes');
   questionsJob.save();
 };

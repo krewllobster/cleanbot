@@ -1,4 +1,4 @@
-const { genLeaderboard } = require('../attachments');
+const { genLeaderboard, selectQuestionButtons } = require('../attachments');
 
 module.exports = async (payload, action, deps) => {
   const {
@@ -48,24 +48,29 @@ module.exports = async (payload, action, deps) => {
 
   const successText = `Sweet! This might be part of a future bonus question :)`;
   const updateText = `Ok, apparently you didn't like your last answer! It's ok, we saved this one :)`;
+  const questionAttachments = await selectQuestionButtons(
+    throwdown_id,
+    round,
+    deps
+  );
   console.log(serverResponse);
 
   const successMessage = commandFactory('slack')
     .setOperation('ephemeralMessage')
     .setChannel(channel_id)
     .setUser(user_id)
-    .setText(
-      (nModified > 0 ? updateText : successText) +
-        `\n Check your leaderboard here: ${process.env
-          .URL_BASE}/leaderboards/${throwdown_id}`
-    )
+    .setText(nModified > 0 ? updateText : successText)
+    .setAttachments(questionAttachments)
     .save();
 
   const errorMessage = commandFactory('slack')
     .setOperation('ephemeralMessage')
     .setChannel(channel_id)
     .setUser(user_id)
-    .setText('Whoops, it looks like something went wrong saving your answer')
+    .setText(
+      'Whoops, it looks like something went wrong saving your answer. Please try again!'
+    )
+    .setAttachments(questionAttachments)
     .save();
 
   if (serverResponse) {

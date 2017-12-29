@@ -1,4 +1,4 @@
-const { findFullThrowdown } = require('../common');
+const { findFullThrowdown, questionPoints } = require('../common');
 const { selectQuestionButtons, genLeaderboard } = require('../attachments');
 const { Response } = require('../models');
 
@@ -18,6 +18,7 @@ module.exports = async (payload, action, deps) => {
     round,
     question,
     correct,
+    bonus,
     requested
   } = JSON.parse(action.value);
 
@@ -39,12 +40,14 @@ module.exports = async (payload, action, deps) => {
       category: question.category,
       correct,
       round,
+      bonus: bonus ? bonus : false,
       requested,
       submitted,
       duration
     }
   );
-  await genLeaderboard(throwdown_id);
+
+  const points = questionPoints(newResponse);
 
   if (!created) {
     const alreadyAnswered = commandFactory('slack')
@@ -60,11 +63,12 @@ module.exports = async (payload, action, deps) => {
   let nextQuestions = await selectQuestionButtons(throwdown_id, round, deps);
 
   let answerText = correct
-    ? `Congratulations! You answered correctly in ${duration} seconds!`
-    : `Whoops...you spent ${duration} seconds thinking...only to get it wrong`;
+    ? `Congratulations! You answered correctly in ${duration} seconds for ${points} points!`
+    : `Whoops...you spent ${duration} seconds thinking...only to get it wrong for ${points} points :/`;
 
   if (nextQuestions[0].actions.length === 0) {
-    answerText += `\nYou're out of questions. Check out your leaderboard here: https://peaceful-stream-90290.herokuapp.com/leaderboards/${throwdown_id}`;
+    answerText += `\nYou're out of questions. Check out your leaderboard here: ${process
+      .env.URL_BASE}/leaderboards/${throwdown_id}`;
   }
 
   let answer = {

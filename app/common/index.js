@@ -6,4 +6,5 @@ module.exports = {
   findAllThrowdowns: require('./findAllThrowdowns'),
   findRandom: require('./findRandom').findRandom,
   shuffle: require('./findRandom').shuffle,
-}
+  questionPoints: require('./questionPoints')
+};
