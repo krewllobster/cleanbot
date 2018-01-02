@@ -1,6 +1,18 @@
 module.exports = {
   allBonus: [
     {
+      text: `What is the best gift you've ever received?`,
+      shortName: 'Favorite Gift',
+      options: [],
+      type: 'long'
+    },
+    {
+      text: `What is the best prank you've ever pulled?`,
+      shortName: 'Best Prank Ever',
+      options: [],
+      type: 'long'
+    },
+    {
       text: `What is your favorite time of day?`,
       shortName: 'preferred time of day',
       options: [`morning`, `afternoon`, `evening`, `night`],

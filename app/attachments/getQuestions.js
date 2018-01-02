@@ -3,9 +3,9 @@ const { brandColor } = require('../constants');
 module.exports = (throwdown, user, opts = { round: null }) => {
   const { round } = opts;
   return {
-    text: `<!channel>: Click below to get your questions for round ${round
+    text: `<!channel>: It's on! Click below to get your questions for round ${round
       ? round
-      : throwdown.round}!`,
+      : throwdown.round} -- they'll appear at the bottom of this channel.`,
     callback_id: 'send_question_list',
     actions: [
       {

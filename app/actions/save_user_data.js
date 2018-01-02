@@ -12,11 +12,13 @@ module.exports = async (payload, action, deps) => {
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
   let data;
-
+  console.log(action);
   if (action.value) data = JSON.parse(action.value);
 
   if (action.selected_options)
     data = JSON.parse(action.selected_options[0].value);
+
+  if (action.response) data = action;
 
   const { bonus, shortName, response, throwdown, round } = data;
   const throwdown_id = throwdown.toString();
@@ -53,6 +55,7 @@ module.exports = async (payload, action, deps) => {
     round,
     deps
   );
+
   console.log(serverResponse);
 
   const successMessage = commandFactory('slack')
