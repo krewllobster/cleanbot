@@ -13,7 +13,7 @@ const dbInterface = () => {
     }) => {
       if (models[entity] && models[entity][operation]) {
         if (populate) {
-          return models[entity]
+          return await models[entity]
             [operation](match, update, options)
             .populate(populate)
             .exec();

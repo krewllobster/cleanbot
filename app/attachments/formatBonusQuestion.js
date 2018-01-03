@@ -1,5 +1,5 @@
 module.exports = (
-  { _id, text, shortName, options, type },
+  { _id, text, shortName, options, answerType },
   { user, throwdown, round }
 ) => {
   let buttons = [];

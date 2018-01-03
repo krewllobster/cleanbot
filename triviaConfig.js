@@ -85,11 +85,8 @@ const populateQuestions = async () => {
 const populateBonus = async () => {
   const { allBonus } = require('./bonusQuestions');
   console.log(allBonus);
-  const existingBonus = (await Bonus.find({})).map(b => b.shortName);
-  const newBonus = allBonus.filter(
-    b => !existingBonus.find(a => a.shortName == b.shortName)
-  );
-  const result = await Bonus.insertMany(newBonus);
+
+  const result = await Bonus.insertMany(allBonus);
 
   console.log(result);
   process.exit();

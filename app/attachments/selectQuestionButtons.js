@@ -2,6 +2,7 @@ const { brandColor } = require('../constants');
 const questionRoundButton = require('./questionRoundButton');
 
 module.exports = async (throwdown_id, round, deps) => {
+  console.log('selecting next questions');
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
   const getResponses = commandFactory('db')
@@ -36,10 +37,17 @@ module.exports = async (throwdown_id, round, deps) => {
     [dbInterface, getQuestions],
     [dbInterface, getUserData]
   ]);
+  const notBonus = q => !q.bonus;
+  const isBonus = q => q.bonus;
+  console.log('responses');
+  console.log(responses);
+  console.log('++++++filtered for bonus++++++++');
+  console.log(responses.filter(isBonus));
+  const answeredQuestionIds = responses
+    .filter(notBonus)
+    .map(r => r.question._id.toString());
 
-  console.log(userData);
-
-  const answeredQuestionIds = responses.map(r => r.question._id.toString());
+  const answeredCoworkerQuestions = responses.filter(isBonus);
 
   const relevantQuestions = throwdown.questions.filter(q => {
     return q.round.toString() == round;
@@ -64,14 +72,18 @@ module.exports = async (throwdown_id, round, deps) => {
       };
     });
 
-  const alreadyBonus = userData.find(u => {
-    console.log(u.round, round);
+  const alreadyBonusUserData = userData.find(u => {
     return u.round == round;
   });
+  const alreadyBonusCoworkerQuestion = answeredCoworkerQuestions.find(r => {
+    return r.round == round;
+  });
+  console.log('already bonus userdata');
+  console.log(alreadyBonusUserData);
+  console.log('already coworker question answer');
+  console.log(alreadyBonusCoworkerQuestion);
 
-  console.log(alreadyBonus);
-
-  if (!alreadyBonus) {
+  if (!alreadyBonusUserData && !alreadyBonusCoworkerQuestion) {
     actions.push({
       name: 'bonus',
       text: `Round ${round} Bonus`,

@@ -14,7 +14,6 @@ module.exports = async (payload, action, deps) => {
 
   const {
     throwdown_id,
-    channel,
     round,
     question,
     correct,
@@ -28,24 +27,51 @@ module.exports = async (payload, action, deps) => {
 
   let duration =
     (new Date(submitted).getTime() - new Date(requested).getTime()) / 1000;
-  duration = parseFloat(duration.toFixed(3));
 
-  const { created, doc: newResponse } = await Response.findOrCreate(
-    {
-      user: user._id,
-      question: question._id,
-      throwdown: throwdown_id
-    },
-    {
-      category: question.category,
-      correct,
-      round,
-      bonus: bonus ? bonus : false,
-      requested,
-      submitted,
-      duration
-    }
-  );
+  requested ? (duration = parseFloat(duration.toFixed(3))) : 0;
+
+  let created, newResponse;
+
+  if (bonus) {
+    const bonusRes = await Response.findOrCreate(
+      {
+        user: user._id,
+        bonusQuestion: question._id,
+        throwown: throwdown_id
+      },
+      {
+        category: 1,
+        correct,
+        round,
+        bonus: true,
+        requested,
+        submitted,
+        duration
+      }
+    );
+
+    created = bonusRes.created;
+    newResponse = bonusRes.doc;
+  } else {
+    let questionRes = await Response.findOrCreate(
+      {
+        user: user._id,
+        question: question._id,
+        throwdown: throwdown_id
+      },
+      {
+        category: question.category,
+        correct,
+        round,
+        bonus: false,
+        requested,
+        submitted,
+        duration
+      }
+    );
+    created = questionRes.created;
+    newResponse = questionRes.doc;
+  }
 
   const points = questionPoints(newResponse);
 

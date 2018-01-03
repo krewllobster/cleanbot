@@ -7,5 +7,6 @@ module.exports = {
   getQuestions: require('./getQuestions'),
   genLeaderboard: require('./genLeaderboard'),
   formatBonusQuestion: require('./formatBonusQuestion'),
-  questionRoundButton: require('./questionRoundButton')
+  questionRoundButton: require('./questionRoundButton'),
+  formatCoworkerQuestion: require('./formatCoworkerQuestion')
 };

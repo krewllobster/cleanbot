@@ -25,7 +25,6 @@ module.exports = async (req, res) => {
     }
     return true;
   };
-  console.log(isJSON(callback_id));
 
   if (isJSON(callback_id)) {
     console.log('callback is JSON');

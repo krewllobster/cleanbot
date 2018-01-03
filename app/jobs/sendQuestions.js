@@ -34,7 +34,7 @@ module.exports = function(agenda) {
 
     if (fullThrowdown.round > 10) {
       console.log('throwdown round is past 10, need to terminate job');
-      agenda.cancel({ _id: job._id }, (err, numRemove) => {
+      agenda.cancel({ _id: job.attrs._id }, (err, numRemove) => {
         console.log(`successfully removed ${numRemove} job(s)`);
       });
       return done();
