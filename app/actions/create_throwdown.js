@@ -234,7 +234,6 @@ const initQuestions = (throwdown, deps) => {
       .setOperation('find')
       .setMatch({ category: { $in: categories } })
       .save();
-
     const allQuestions = await exec.one(dbInterface, getQuestions);
 
     let easy = findRandom(

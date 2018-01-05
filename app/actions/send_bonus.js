@@ -17,7 +17,7 @@ module.exports = async (payload, action, deps) => {
   } = payload;
 
   const { throwdown_id, round } = JSON.parse(action.value);
-
+  console.log('round from send_bonus.js action.value', round);
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
   //find existing user data responses
@@ -50,13 +50,19 @@ module.exports = async (payload, action, deps) => {
     ])
     .catch(err => console.log(err));
 
+  console.log(userData);
+
   const isUser = f => f.user_id == user_id;
   const notUser = f => f.user_id != user_id;
   const matchUser = id => f => f.user == id.toString();
+
   const responses = userData.filter(isUser).map(d => d.bonus._id.toString());
+
   const alreadyAsked = userData
     .filter(isUser)
     .filter(d => d.throwdown.toString() == throwdown_id && d.round == round);
+
+  const unAskedCoworkerQuestions = userData.filter(notUser);
 
   if (alreadyAsked.length > 0) {
     const alreadyDoneMessage = commandFactory('slack')
@@ -73,7 +79,10 @@ module.exports = async (payload, action, deps) => {
     b => !responses.includes(b._id.toString())
   );
 
-  if (notAsked.length === 0 || round % 2 === 0) {
+  if (
+    notAsked.length === 0 ||
+    (round % 2 === 0 && unAskedCoworkerQuestions.length > 0)
+  ) {
     const bonusPlayer = shuffle(
       participants.filter(i => i != user._id.toString())
     )[0];
@@ -85,7 +94,13 @@ module.exports = async (payload, action, deps) => {
 
     const coWorkerData = shuffle(userData.filter(matchUser(bonusPlayer)))[0];
     const qType = coWorkerData.bonus.questionType;
-    const formattedQuestion = formatCoworkerQuestion[qType](coWorkerData);
+    console.log('round before calling format coworker function ', round);
+    const formattedQuestion = formatCoworkerQuestion[qType](
+      coWorkerData,
+      round
+    );
+    console.log('formatted question from coworker question');
+    console.log(formattedQuestion[0]);
     const sendCoworkerQuestion = commandFactory('slack')
       .setOperation('ephemeralMessage')
       .setText(`Bonus question for round ${round}`)

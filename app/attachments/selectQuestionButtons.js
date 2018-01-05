@@ -1,27 +1,29 @@
 const { brandColor } = require('../constants');
 const questionRoundButton = require('./questionRoundButton');
+const singleQuestion = require('./singleQuestion');
 
 module.exports = async (throwdown_id, round, deps) => {
   console.log('selecting next questions');
+  console.log('for round ', round);
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
+  //ALL responses belonging to user
   const getResponses = commandFactory('db')
     .setEntity('Response')
     .setOperation('find')
-    .setMatch({
-      throwdown: throwdown_id,
-      user: user._id
-    })
+    .setMatch({ user: user._id })
     .setPopulate('question')
     .save();
 
+  //questions belonging to throwdown
   const getQuestions = commandFactory('db')
     .setEntity('Throwdown')
     .setOperation('findOne')
-    .setMatch({ _id: throwdown_id, 'questions.round': round })
+    .setMatch({ _id: throwdown_id })
     .setPopulate([{ path: 'questions.question', model: 'Question' }])
     .save();
 
+  //userData belonging to user from this throwdown
   const getUserData = commandFactory('db')
     .setEntity('UserData')
     .setOperation('find')
@@ -37,53 +39,52 @@ module.exports = async (throwdown_id, round, deps) => {
     [dbInterface, getQuestions],
     [dbInterface, getUserData]
   ]);
-  const notBonus = q => !q.bonus;
-  const isBonus = q => q.bonus;
-  console.log('responses');
-  console.log(responses);
-  console.log('++++++filtered for bonus++++++++');
-  console.log(responses.filter(isBonus));
-  const answeredQuestionIds = responses
-    .filter(notBonus)
-    .map(r => r.question._id.toString());
 
-  const answeredCoworkerQuestions = responses.filter(isBonus);
-
-  const relevantQuestions = throwdown.questions.filter(q => {
-    return q.round.toString() == round;
+  //user's responses to THIS throwdown
+  const questionResponses = responses.filter(
+    r => !r.bonus && r.throwdown == throwdown_id
+  );
+  //user's responses to ALL bonus questions asked
+  const allBonusResponses = responses.filter(r => r.bonus);
+  //user's responses to bonus questions THIS throwdown
+  const tdBonusResponses = responses.filter(r => {
+    return r.bonus && r.throwdown == throwdown_id;
+  });
+  //throwdown's questions that have NOT been answered by user
+  //i.e. filter for question.round == this.round && question.id not in questionResponses
+  const questionResponseIds = questionResponses.map(q =>
+    q.question._id.toString()
+  );
+  const roundQuestions = throwdown.questions.filter(q => q.round == round);
+  const remainingRoundQuestions = roundQuestions.filter(q => {
+    return !questionResponseIds.includes(q.question._id.toString());
   });
 
-  let actions = relevantQuestions
-    .filter(q => {
-      return !answeredQuestionIds.includes(q.question._id.toString());
-    })
-    .map(q => {
-      return {
+  const bonusAnsweredThisRound =
+    tdBonusResponses.find(r => r.round == round) ||
+    userData.find(r => r.round == round);
+
+  let actions = [];
+
+  //add any remaining questions to actions
+  if (remainingRoundQuestions.length > 0) {
+    remainingRoundQuestions.forEach(q => {
+      actions.push({
         name: q.question.difficulty,
         text: `Round ${q.round}: ${q.question.difficulty}`,
         value: JSON.stringify({
           throwdown_id: throwdown_id,
-          channel: throwdown.channel,
-          bonus: false,
+          bonus: q.bonus || false,
           question: q.question,
           round: round
         }),
         type: 'button'
-      };
+      });
     });
-
-  const alreadyBonusUserData = userData.find(u => {
-    return u.round == round;
-  });
-  const alreadyBonusCoworkerQuestion = answeredCoworkerQuestions.find(r => {
-    return r.round == round;
-  });
-  console.log('already bonus userdata');
-  console.log(alreadyBonusUserData);
-  console.log('already coworker question answer');
-  console.log(alreadyBonusCoworkerQuestion);
-
-  if (!alreadyBonusUserData && !alreadyBonusCoworkerQuestion) {
+  }
+  //if the user has not answered a bonus question this round
+  //i.e. if user has no responses where throwdown == this.throwdown && round == this.round
+  if (!bonusAnsweredThisRound) {
     actions.push({
       name: 'bonus',
       text: `Round ${round} Bonus`,
@@ -93,12 +94,11 @@ module.exports = async (throwdown_id, round, deps) => {
         throwdown_id: throwdown_id,
         bonus: true,
         question: null,
-        channel: throwdown.channel,
         round: round
       })
     });
   }
-
+  //if there are questions left, send back message with remaining questions
   if (actions.length > 0) {
     return [
       {
@@ -110,6 +110,7 @@ module.exports = async (throwdown_id, round, deps) => {
     ];
   }
 
+  //if there are no quesitons left, count the responded questions for each round
   const roundTotals = {
     '1': 0,
     '2': 0,
@@ -123,31 +124,43 @@ module.exports = async (throwdown_id, round, deps) => {
     '10': 0
   };
 
-  responses.forEach(r => (roundTotals[r.round] += 1));
+  questionResponses.forEach(r => (roundTotals[r.round] += 1));
+  allBonusResponses.forEach(r => (roundTotals[r.round] += 1));
   userData.forEach(u => (roundTotals[u.round] += 1));
 
-  const unfinishedRounds = Object.keys(roundTotals)
-    .filter(k => k <= throwdown.round && roundTotals[k] < 4)
-    .map(k => {
-      return { round: k, count: roundTotals[k] };
-    });
+  console.log('round totals');
+  console.log(roundTotals);
 
   const roundButtons = [];
 
-  if (unfinishedRounds.length > 0) {
-    unfinishedRounds.forEach(r => {
-      roundButtons.push(
-        questionRoundButton(throwdown, user, { round: r.round })
-      );
-    });
+  Object.keys(roundTotals).forEach(r => {
+    let total = roundTotals[r];
+    if (total < 4 && r <= throwdown.round) {
+      roundButtons.push(questionRoundButton(throwdown, user, { round: r }));
+    }
+  });
+
+  console.log('round buttons');
+
+  //if any unfinished rounds, send list of round buttons
+  if (roundButtons && roundButtons.length > 0) {
+    return [
+      {
+        color: brandColor,
+        text: `You have some unfinished rounds -- do them while you're hot!`,
+        callback_id: 'send_question_list',
+        actions: roundButtons
+      }
+    ];
   }
 
+  //otherwise send back a leaderboard message
+  //TODO: this is where to send back a roundup. Can do based on responses
   return [
     {
       color: brandColor,
-      text: `You have some unfinished rounds -- do them while you're hot!`,
-      callback_id: 'send_question_list',
-      actions: roundButtons
+      text: `Nice. You've completed round ${round}.\nYou can find your leaderboard here: ${process
+        .env.URL_BASE}/leaderboards/${throwdown_id}`
     }
   ];
 };

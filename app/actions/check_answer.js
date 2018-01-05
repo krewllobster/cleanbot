@@ -12,16 +12,16 @@ module.exports = async (payload, action, deps) => {
     original_message
   } = payload;
 
-  const {
-    throwdown_id,
-    round,
-    question,
-    correct,
-    bonus,
-    requested
-  } = JSON.parse(action.value);
+  let { throwdown_id, round, question, correct, requested } = JSON.parse(
+    action.value
+  );
+
+  console.log('checking answer action value');
+  console.log(JSON.parse(action.value));
 
   const { slack, dbInterface, commandFactory, exec, user } = deps;
+
+  if (!requested) requested = new Date();
 
   const submitted = new Date();
 
@@ -30,48 +30,32 @@ module.exports = async (payload, action, deps) => {
 
   requested ? (duration = parseFloat(duration.toFixed(3))) : 0;
 
-  let created, newResponse;
+  let match = {
+    user: user._id,
+    question: question._id,
+    throwdown: throwdown_id
+  };
 
-  if (bonus) {
-    const bonusRes = await Response.findOrCreate(
-      {
-        user: user._id,
-        bonusQuestion: question._id,
-        throwown: throwdown_id
-      },
-      {
-        category: 1,
-        correct,
-        round,
-        bonus: true,
-        requested,
-        submitted,
-        duration
-      }
-    );
+  let update = {
+    category: question.category,
+    correct,
+    round,
+    requested,
+    submitted,
+    duration,
+    bonus: question.bonus
+  };
 
-    created = bonusRes.created;
-    newResponse = bonusRes.doc;
-  } else {
-    let questionRes = await Response.findOrCreate(
-      {
-        user: user._id,
-        question: question._id,
-        throwdown: throwdown_id
-      },
-      {
-        category: question.category,
-        correct,
-        round,
-        bonus: false,
-        requested,
-        submitted,
-        duration
-      }
-    );
-    created = questionRes.created;
-    newResponse = questionRes.doc;
-  }
+  console.log('match', match);
+  console.log('update', update);
+
+  let { created, doc: newResponse } = await Response.findOrCreate(
+    match,
+    update
+  );
+
+  console.log('created', created);
+  console.log('response', newResponse);
 
   const points = questionPoints(newResponse);
 

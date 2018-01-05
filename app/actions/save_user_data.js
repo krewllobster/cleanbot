@@ -13,6 +13,7 @@ module.exports = async (payload, action, deps) => {
 
   let data;
   console.log(action);
+
   if (action.value) data = JSON.parse(action.value);
 
   if (action.selected_options)
@@ -20,16 +21,18 @@ module.exports = async (payload, action, deps) => {
 
   if (action.response) data = action;
 
-  const { bonus, shortName, response, throwdown, round } = data;
-  const throwdown_id = throwdown.toString();
+  console.log(data);
+
+  const { question, response, throwdown_id, round } = data;
+
   const newdata = {
-    bonus,
-    shortName,
+    question: question._id,
+    shortName: question.shortName,
     response,
     user_id,
     team_id,
     user: user._id,
-    throwdown,
+    throwdown: throwdown_id,
     round
   };
 
@@ -37,7 +40,7 @@ module.exports = async (payload, action, deps) => {
     .setEntity('UserData')
     .setOperation('update')
     .setMatch({
-      bonus,
+      question: question._id,
       user: user._id
     })
     .setUpdate(newdata)

@@ -28,30 +28,6 @@ module.exports = categories => {
     }
   ];
 
-  console.log(dates);
-  //minutes
-  // for (i = 1; i < 5; i++) {
-  //   let d = moment().add(i, 'minutes');
-  //   let date = {
-  //     label: `In ${i} minute${i > 1 ? 's' : ''}`,
-  //     value: d
-  //   };
-  //   dates.push(date);
-  // }
-
-  //use days
-  // for (i = 1; i < 8; i++) {
-  //   let d = moment().add(i, 'days')
-  //   console.log(i, d.format('MMM Do'))
-  //   if (d.format('e') !== '0' && d.format('e') !== '6') {
-  //     let date = {
-  //       label: d.format('ddd, MMM Do'),
-  //       value: d
-  //     }
-  //     dates.push(date)
-  //   }
-  // }
-
   return JSON.stringify({
     callback_id: 'create_throwdown',
     title: 'Create New Throwdown',

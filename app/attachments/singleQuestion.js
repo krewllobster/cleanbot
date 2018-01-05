@@ -1,9 +1,9 @@
 const { shuffle } = require('../common');
 const { brandColor } = require('../constants');
 
-module.exports = ({ throwdown_id, question, channel, round }) => {
+module.exports = ({ throwdown_id, question, round }) => {
   let actions = [];
-
+  //TODO: alternative formatting for bonus question to consolidate
   const longestAnswer = question.answers
     .map(a => a.text.length)
     .reduce((p, v) => (v > p ? v : p));
@@ -21,7 +21,6 @@ module.exports = ({ throwdown_id, question, channel, round }) => {
         longestAnswer > longestAllowed ? String.fromCharCode(65 + i) : a.text,
       value: JSON.stringify({
         throwdown_id,
-        channel,
         round,
         question,
         correct: a.correct,

@@ -1,15 +1,16 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const questionSchema = new mongoose.Schema({
-  category: {type: Number, ref: 'Category', field: '_id'},
+  category: { type: Number, ref: 'Category', field: '_id' },
   text: String,
-  answers: [
-    {text: String, correct: Boolean}
-  ],
-  type: String,
+  shortName: { type: String, default: '' },
+  answers: [{ text: String, correct: Boolean }],
+  answerType: String,
+  questionType: { type: String, default: '' },
   difficulty: String,
-})
+  bonus: { type: Boolean, default: false }
+});
 
-const Question = mongoose.model("Question", questionSchema)
+const Question = mongoose.model('Question', questionSchema);
 
-module.exports = Question
+module.exports = Question;

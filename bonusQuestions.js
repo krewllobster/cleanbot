@@ -31,47 +31,50 @@ for (let i = 0; i < things.length; i++) {
       let t1 = things[i];
       let t2 = things[j];
       comparisons.push({
+        category: 1,
         text: `Which would you prefer doing?`,
         shortName: `${t1.verb} ${t1.noun} vs ${t2.verb} ${t2.noun}`,
-        options: [
-          `${t1.verb} ${t1.noun}`,
-          `${t2.verb} ${t2.noun}`,
-          'Neither',
-          'I like both!'
+        answers: [
+          { text: `${t1.verb} ${t1.noun}`, correct: false },
+          { text: `${t2.verb} ${t2.noun}`, correct: false },
+          { text: 'Neither', correct: false },
+          { text: 'I like both!', correct: false }
         ],
         answerType: 'mc',
-        questionType: 'preference'
+        questionType: 'preference',
+        bonus: true,
+        difficulty: 'bonus'
       });
     }
   }
 }
-
+//TODO: reformat premade and insert into questions
 const premade = [
   {
     text: `What is the best gift you've ever received?`,
     shortName: 'Favorite Gift',
-    options: [],
+    answers: [],
     answerType: 'long',
     questionType: 'experience'
   },
   {
     text: `What is the best prank you've ever pulled?`,
     shortName: 'Best Prank Ever',
-    options: [],
+    answers: [],
     answerType: 'long',
     questionType: 'experience'
   },
   {
     text: `What is your favorite time of day?`,
     shortName: 'preferred time of day',
-    options: [`morning`, `afternoon`, `evening`, `night`],
+    answers: [`morning`, `afternoon`, `evening`, `night`],
     answerType: 'mc',
     questionType: 'preference'
   },
   {
     text: 'What is your favorite season?',
     shortName: 'preferred season',
-    options: ['spring', 'summer', 'fall', 'winter'],
+    answers: ['spring', 'summer', 'fall', 'winter'],
     answerType: 'mc',
     questionType: 'preference'
   },
@@ -142,5 +145,5 @@ const premade = [
 ];
 
 module.exports = {
-  allBonus: [...comparisons, ...premade]
+  allBonus: [...comparisons]
 };

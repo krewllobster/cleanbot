@@ -86,7 +86,7 @@ const populateBonus = async () => {
   const { allBonus } = require('./bonusQuestions');
   console.log(allBonus);
 
-  const result = await Bonus.insertMany(allBonus);
+  const result = await Question.insertMany(allBonus);
 
   console.log(result);
   process.exit();
