@@ -26,8 +26,9 @@ module.exports = async (body, deps) => {
     .setChannel(channel_id)
     .setUser(user_id)
     .setText(
-      `Click this link to see your leaderboard as of right now!\n${process.env
-        .SLACK_REDIRECT}/leaderboards/${throwdown._id}`
+      `Click this link to see your leaderboard as of right now!\n${
+        process.env.URL_BASE
+      }/leaderboards/${throwdown._id}`
     )
     .save();
 

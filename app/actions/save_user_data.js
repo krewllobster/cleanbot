@@ -49,10 +49,10 @@ module.exports = async (payload, action, deps) => {
 
   const serverResponse = await exec.one(dbInterface, saveData);
 
-  const { nModified } = serverResponse;
+  // const { nModified } = serverResponse;
 
   const successText = `Sweet! This might be part of a future bonus question :)`;
-  const updateText = `Ok, apparently you didn't like your last answer! It's ok, we saved this one :)`;
+  // const updateText = `Ok, apparently you didn't like your last answer! It's ok, we saved this one :)`;
   const questionAttachments = await selectQuestionButtons(
     throwdown_id,
     round,
@@ -65,7 +65,7 @@ module.exports = async (payload, action, deps) => {
     .setOperation('ephemeralMessage')
     .setChannel(channel_id)
     .setUser(user_id)
-    .setText(nModified > 0 ? updateText : successText)
+    .setText(/*nModified > 0 ? updateText : */ successText)
     .setAttachments(questionAttachments)
     .save();
 

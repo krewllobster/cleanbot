@@ -17,7 +17,7 @@ module.exports = async (payload, action, deps) => {
   } = payload;
 
   const { throwdown_id, round } = JSON.parse(action.value);
-  console.log('round from send_bonus.js action.value', round);
+
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
   //find existing user data responses
@@ -33,74 +33,125 @@ module.exports = async (payload, action, deps) => {
     .setEntity('UserData')
     .setMatch({ team_id })
     .setOperation('find')
-    .setPopulate('bonus')
+    .setPopulate('question')
+    .save();
+
+  const getResponses = commandFactory('db')
+    .setEntity('Response')
+    .setOperation('find')
+    .setMatch({ user: user._id })
     .save();
 
   const getBonusQuestions = commandFactory('db')
-    .setEntity('Bonus')
+    .setEntity('Question')
     .setOperation('find')
-    .setMatch({})
+    .setMatch({ bonus: true })
     .save();
 
-  const [bonusQuestions, userData, { participants }] = await exec
+  const [
+    userData,
+    { participants },
+    responses,
+    bonusQuestions
+  ] = await exec
     .many([
-      [dbInterface, getBonusQuestions],
       [dbInterface, getUserData],
-      [dbInterface, getParticipants]
+      [dbInterface, getParticipants],
+      [dbInterface, getResponses],
+      [dbInterface, getBonusQuestions]
     ])
     .catch(err => console.log(err));
-
-  console.log(userData);
 
   const isUser = f => f.user_id == user_id;
   const notUser = f => f.user_id != user_id;
   const matchUser = id => f => f.user == id.toString();
 
-  const responses = userData.filter(isUser).map(d => d.bonus._id.toString());
-
-  const alreadyAsked = userData
+  const askedBonusQuestionIds = userData
     .filter(isUser)
-    .filter(d => d.throwdown.toString() == throwdown_id && d.round == round);
+    .map(d => d.question._id.toString());
 
-  const unAskedCoworkerQuestions = userData.filter(notUser);
+  const askedCoworkerQuestionIds = responses
+    .filter(r => r.bonus)
+    .map(r => r.question.toString());
 
-  if (alreadyAsked.length > 0) {
-    const alreadyDoneMessage = commandFactory('slack')
-      .setOperation('ephemeralMessage')
-      .setUser(user_id)
-      .setChannel(channel_id)
-      .setText(`You've already answered a bonus for this round!`)
-      .save();
+  const unaskedCoworkerQuestions = userData.filter(notUser).filter(r => {
+    return !askedCoworkerQuestionIds.includes(r.question._id.toString());
+  });
 
-    return await exec.one(slack, alreadyDoneMessage);
-  }
-
-  const notAsked = bonusQuestions.filter(
-    b => !responses.includes(b._id.toString())
+  const unaskedPersonalQuestions = bonusQuestions.filter(
+    b => !askedBonusQuestionIds.includes(b._id.toString())
   );
 
-  if (
-    notAsked.length === 0 ||
-    (round % 2 === 0 && unAskedCoworkerQuestions.length > 0)
-  ) {
-    const bonusPlayer = shuffle(
-      participants.filter(i => i != user._id.toString())
-    )[0];
-    console.log(bonusPlayer);
-    if (!bonusPlayer) {
-      console.log('throwdown cant start without at least 2 people');
-      return new Error('Throwdown has only 1 participant');
+  const bonusQuestionThisRound = responses.find(r => {
+    return r.throwdown.toString() == throwdown_id && r.round == round;
+  });
+
+  if (bonusQuestionThisRound) {
+    let formattedQuestion;
+    console.log('response exists');
+    if (!bonusQuestionThisRound.correct && bonusQuestionThisRound.coworker_id) {
+      //TODO: find bonus coworker question and re-send formatted
+      let bonusToAsk = userData.find(u => {
+        return (
+          u.user_id == bonusQuestionThisRound.coworker_id &&
+          u.question.toString() == bonusQuestionThisRound.question.toString()
+        );
+      });
+      let questionType = bonusToAsk.question.questionType;
+      formattedQuestion = formatCoworkerQuestion[questionType](
+        bonusToAsk,
+        round
+      );
     }
 
-    const coWorkerData = shuffle(userData.filter(matchUser(bonusPlayer)))[0];
-    const qType = coWorkerData.bonus.questionType;
-    console.log('round before calling format coworker function ', round);
+    if (
+      !bonusQuestionThisRound.correct ||
+      bonusQuestionThisRound.correct == null
+    ) {
+      //TODO: find bonus personal question and re-send formatted
+      let userDataToAsk = bonusQuestions.find(
+        u => u._id.toString() == bonusQuestionThisRound.question.toString()
+      );
+      console.log(userDataToAsk);
+      formattedQuestion = formatBonusQuestion({
+        throwdown_id,
+        question: userDataToAsk,
+        round
+      });
+    }
+
+    const resendBonus = commandFactory('slack')
+      .setOperation('ephemeralMessage')
+      .setText(`Bonus Question for round ${round}`)
+      .setAttachments(formattedQuestion)
+      .setUser(user_id)
+      .setChannel(channel_id)
+      .save();
+
+    return await exec.one(slack, resendBonus);
+  }
+
+  const saveResponse = async (id, coWorkerId) => {
+    let createResponse = commandFactory('db')
+      .setEntity('Response')
+      .setOperation('update')
+      .setMatch({ throwdown: throwdown_id, round, user: user._id })
+      .setUpdate({ question: id, coworker_id: coWorkerId ? coWorkerId : null })
+      .setOptions({ upsert: true, new: true })
+      .save();
+
+    return await exec.one(dbInterface, createResponse);
+  };
+
+  if (round % 2 === 0 && unaskedCoworkerQuestions.length > 0) {
+    let coWorkerData = shuffle(userData.filter(notUser))[0];
+    let qType = coWorkerData.question.questionType;
     const formattedQuestion = formatCoworkerQuestion[qType](
       coWorkerData,
       round
     );
-    console.log('formatted question from coworker question');
-    console.log(formattedQuestion[0]);
+    let res = await saveResponse(coWorkerData._id, coWorkerData.user_id);
+
     const sendCoworkerQuestion = commandFactory('slack')
       .setOperation('ephemeralMessage')
       .setText(`Bonus question for round ${round}`)
@@ -112,17 +163,17 @@ module.exports = async (payload, action, deps) => {
     return await exec.one(slack, sendCoworkerQuestion);
   }
 
-  const b = shuffle(notAsked)[0];
-  const bonusType = b.answerType;
-
-  if (bonusType == 'mc') {
-    console.log('sending multiple choice bonus');
-    let bonusAttachment = formatBonusQuestion(b, {
-      user,
-      throwdown: throwdown_id,
+  if (unaskedPersonalQuestions.length > 0) {
+    let bonusQuestion = shuffle(unaskedPersonalQuestions)[0];
+    let bonusAttachment = formatBonusQuestion({
+      throwdown_id,
+      question: bonusQuestion,
       round
     });
-    const bonusMessage = commandFactory('slack')
+
+    let res = await saveResponse(bonusQuestion._id);
+
+    const sendPersonalBonusQuestion = commandFactory('slack')
       .setOperation('ephemeralMessage')
       .setUser(user_id)
       .setChannel(channel_id)
@@ -130,22 +181,56 @@ module.exports = async (payload, action, deps) => {
       .setAttachments(bonusAttachment)
       .save();
 
-    return await exec.one(slack, bonusMessage);
+    return await exec.one(slack, sendPersonalBonusQuestion);
   }
+  // const b = shuffle(notAsked)[0];
+  // const bonusType = b.answerType;
 
-  if (bonusType == 'long') {
-    console.log('sending longForm bonus');
-    let bonusDialog = formatBonusDialog(b, {
-      user,
-      throwdown: throwdown_id,
-      round
-    });
-    let sendBonusDialog = commandFactory('slack')
-      .setOperation('openDialog')
-      .setTrigger(trigger_id)
-      .setDialog(bonusDialog)
-      .save();
+  // if (bonusType == 'mc') {
+  //   console.log('sending multiple choice bonus');
+  //   let bonusAttachment = formatBonusQuestion(b, {
+  //     user,
+  //     throwdown: throwdown_id,
+  //     round
+  //   });
+  //   const bonusMessage = commandFactory('slack')
+  //     .setOperation('ephemeralMessage')
+  //     .setUser(user_id)
+  //     .setChannel(channel_id)
+  //     .setText('')
+  //     .setAttachments(bonusAttachment)
+  //     .save();
 
-    return await exec.one(slack, sendBonusDialog);
-  }
+  //   return await exec.one(slack, bonusMessage);
+  // }
+
+  // if (bonusType == 'long') {
+  //   console.log('sending longForm bonus');
+  //   let bonusDialog = formatBonusDialog(b, {
+  //     user,
+  //     throwdown: throwdown_id,
+  //     round
+  //   });
+  //   let sendBonusDialog = commandFactory('slack')
+  //     .setOperation('openDialog')
+  //     .setTrigger(trigger_id)
+  //     .setDialog(bonusDialog)
+  //     .save();
+
+  //   return await exec.one(slack, sendBonusDialog);
+  // }
 };
+
+//already ask check done in send_question.js but here just incase
+
+// if (alreadyAsked.length > 0) {
+//   console.log('already ask check done in send_bonus');
+//   const alreadyDoneMessage = commandFactory('slack')
+//     .setOperation('ephemeralMessage')
+//     .setUser(user_id)
+//     .setChannel(channel_id)
+//     .setText(`You've already answered a bonus for this round!`)
+//     .save();
+
+//   return await exec.one(slack, alreadyDoneMessage);
+// }

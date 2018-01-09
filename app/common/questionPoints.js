@@ -1,5 +1,10 @@
-module.exports = response => {
-  const { correct, duration, bonus } = response;
+module.exports = ({ correct, duration, bonus, difficulty }) => {
+  const diffPoints = {
+    easy: 30,
+    medium: 50,
+    hard: 70,
+    unknown: 50
+  };
 
   if (bonus && correct) return 20;
   if (bonus && !correct) return 0;

@@ -46,18 +46,20 @@ module.exports = async (payload, action, deps) => {
     bonus: question.bonus
   };
 
-  console.log('match', match);
-  console.log('update', update);
-
   let { created, doc: newResponse } = await Response.findOrCreate(
     match,
     update
   );
 
-  console.log('created', created);
-  console.log('response', newResponse);
+  const forPoints = {
+    correct: newResponse.correct,
+    duration: newResponse.duration,
+    bonus: newResponse.bonus,
+    difficulty: question.difficulty
+  };
+  console.log(forPoints);
 
-  const points = questionPoints(newResponse);
+  const points = questionPoints(forPoints);
 
   if (!created) {
     const alreadyAnswered = commandFactory('slack')
@@ -73,12 +75,15 @@ module.exports = async (payload, action, deps) => {
   let nextQuestions = await selectQuestionButtons(throwdown_id, round, deps);
 
   let answerText = correct
-    ? `Congratulations! You answered correctly in ${duration} seconds for ${points} points!`
+    ? `Congratulations! You answered correctly ${
+        !question.bonus ? `in ${duration} seconds` : ''
+      } for ${points} points!`
     : `Whoops...you spent ${duration} seconds thinking...only to get it wrong for ${points} points :/`;
 
   if (nextQuestions[0].actions.length === 0) {
-    answerText += `\nYou're out of questions. Check out your leaderboard here: ${process
-      .env.URL_BASE}/leaderboards/${throwdown_id}`;
+    answerText += `\nYou're out of questions. Check out your leaderboard here: ${
+      process.env.URL_BASE
+    }/leaderboards/${throwdown_id}`;
   }
 
   let answer = {

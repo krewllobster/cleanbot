@@ -27,6 +27,7 @@ const genLeaderBoard = async throwdown_id => {
     },
     { $addFields: { user_name: '$fullUser.display_name' } },
     { $addFields: { question_text: '$fullQuestion.text' } },
+    { $addFields: { question_difficulty: '$fullQuestion.difficulty' } },
     { $unwind: '$user_name' },
     { $unwind: '$question_text' }
     // {
@@ -91,7 +92,13 @@ const genLeaderBoard = async throwdown_id => {
   // }, {});
   console.log('calculating simple data');
   const dataReduced = allData.reduce((obj, r) => {
-    let points = questionPoints(r);
+    const forPoints = {
+      correct: r.correct,
+      duration: r.duration,
+      bonus: r.bonus,
+      difficulty: r.question_difficulty
+    };
+    let points = questionPoints(forPoints);
     let name = r.user_name;
     let currentPoints = obj[name] || 0;
     obj[name] = currentPoints + points;

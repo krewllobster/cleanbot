@@ -117,10 +117,11 @@ module.exports = async (payload, submission, deps) => {
 
   responseMessage = newThrowdownMessage
     .setText(
-      `Congratulations, your Throwdown has been set up! \n ${throwdown.privacy ===
-      'private'
-        ? 'You can invite people using the invite button below.'
-        : 'Your throwdown will now show up for anyone to join.'}`
+      `Congratulations, your Throwdown has been set up! \n ${
+        throwdown.privacy === 'private'
+          ? 'You can invite people using the invite button below.'
+          : 'Your throwdown will now show up for anyone to join.'
+      }`
     )
     .setAttachments([singleThrowdown(throwdown, user_id, false)])
     .save();
@@ -141,7 +142,7 @@ module.exports = async (payload, submission, deps) => {
   console.log('starting questions at ', updatedThrowdown.start_date);
 
   questionsJob.schedule(updatedThrowdown.start_date);
-  questionsJob.repeatEvery('2 minutes');
+  questionsJob.repeatEvery('10 seconds');
   questionsJob.save();
 };
 

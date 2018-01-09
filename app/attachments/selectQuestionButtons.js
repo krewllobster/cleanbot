@@ -28,9 +28,7 @@ module.exports = async (throwdown_id, round, deps) => {
     .setEntity('UserData')
     .setOperation('find')
     .setMatch({
-      user_id: user.user_id,
-      team_id: user.team_id,
-      throwdown: throwdown_id
+      user: user._id
     })
     .save();
 
@@ -50,6 +48,11 @@ module.exports = async (throwdown_id, round, deps) => {
   const tdBonusResponses = responses.filter(r => {
     return r.bonus && r.throwdown == throwdown_id;
   });
+  const roundBonusResponses = tdBonusResponses.filter(r => r.round == round);
+  const tdUserData = userData.filter(u => {
+    return u.throwdown.toString() == throwdown_id;
+  });
+  const roundUserData = tdUserData.filter(u => u.round == round);
   //throwdown's questions that have NOT been answered by user
   //i.e. filter for question.round == this.round && question.id not in questionResponses
   const questionResponseIds = questionResponses.map(q =>
@@ -60,9 +63,10 @@ module.exports = async (throwdown_id, round, deps) => {
     return !questionResponseIds.includes(q.question._id.toString());
   });
 
-  const bonusAnsweredThisRound =
-    tdBonusResponses.find(r => r.round == round) ||
-    userData.find(r => r.round == round);
+  const bonusAnsweredThisRound = [...roundBonusResponses, ...roundUserData];
+
+  console.log('bonus answered this round ________________');
+  console.log(bonusAnsweredThisRound);
 
   let actions = [];
 
@@ -84,7 +88,8 @@ module.exports = async (throwdown_id, round, deps) => {
   }
   //if the user has not answered a bonus question this round
   //i.e. if user has no responses where throwdown == this.throwdown && round == this.round
-  if (!bonusAnsweredThisRound) {
+  if (bonusAnsweredThisRound.length == 0) {
+    console.log('no bonuses this round, send new bonus button');
     actions.push({
       name: 'bonus',
       text: `Round ${round} Bonus`,
@@ -159,8 +164,9 @@ module.exports = async (throwdown_id, round, deps) => {
   return [
     {
       color: brandColor,
-      text: `Nice. You've completed round ${round}.\nYou can find your leaderboard here: ${process
-        .env.URL_BASE}/leaderboards/${throwdown_id}`
+      text: `Nice. You've completed round ${round}.\nYou can find your leaderboard here: ${
+        process.env.URL_BASE
+      }/leaderboards/${throwdown_id}`
     }
   ];
 };

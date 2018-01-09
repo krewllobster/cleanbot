@@ -40,6 +40,10 @@ module.exports = ({ throwdown_id, question, round }) => {
       callback_id: 'check_answer',
       fallback: 'You have a new question to answer',
       actions: actions
+    },
+    {
+      text: '',
+      footer: `ID: ${question._id.toString()}`
     }
   ];
 };
