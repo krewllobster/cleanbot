@@ -88,9 +88,17 @@ module.exports = async (payload, action, deps) => {
 
   if (bonusQuestionThisRound) {
     let formattedQuestion;
+    let responseText = '';
+    let { correct, coworker_id } = bonusQuestionThisRound;
+    let answered = correct == true || correct == false;
+    let coworkerQ = coworker_id
+      ? coworker_id.length > 0 ? true : false
+      : false;
     console.log('response exists');
-    if (!bonusQuestionThisRound.correct && bonusQuestionThisRound.coworker_id) {
-      //TODO: find bonus coworker question and re-send formatted
+    console.log(bonusQuestionThisRound);
+    console.log('answered: ', answered);
+    console.log('coworkerQ: ', coworkerQ);
+    if (!answered && coworkerQ) {
       let bonusToAsk = userData.find(u => {
         return (
           u.user_id == bonusQuestionThisRound.coworker_id &&
@@ -102,13 +110,10 @@ module.exports = async (payload, action, deps) => {
         bonusToAsk,
         round
       );
-    }
-
-    if (
-      !bonusQuestionThisRound.correct ||
-      bonusQuestionThisRound.correct == null
-    ) {
-      //TODO: find bonus personal question and re-send formatted
+    } else if (answered && coworkerQ) {
+      console.log('updating response text');
+      responseText = `You've already answered this bonus question!`;
+    } else {
       let userDataToAsk = bonusQuestions.find(
         u => u._id.toString() == bonusQuestionThisRound.question.toString()
       );
@@ -119,16 +124,18 @@ module.exports = async (payload, action, deps) => {
         round
       });
     }
-
+    console.log('response text ', responseText);
     const resendBonus = commandFactory('slack')
       .setOperation('ephemeralMessage')
-      .setText(`Bonus Question for round ${round}`)
-      .setAttachments(formattedQuestion)
+      .setText(responseText)
+      .setAttachments(formattedQuestion || null)
       .setUser(user_id)
       .setChannel(channel_id)
       .save();
-
-    return await exec.one(slack, resendBonus);
+    console.log(resendBonus);
+    let serverRes = await exec.one(slack, resendBonus);
+    console.log(serverRes);
+    return;
   }
 
   const saveResponse = async (id, coWorkerId) => {
