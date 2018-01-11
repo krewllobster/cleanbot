@@ -168,7 +168,7 @@ module.exports = async (throwdown_id, round, deps) => {
         process.env.URL_BASE
       }/leaderboards/${throwdown_id}`,
       actions: [],
-      callback_id: 'send_question_list'
+      callback_id: 'leaderboard'
     }
   ];
 };

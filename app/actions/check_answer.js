@@ -83,32 +83,112 @@ module.exports = async (payload, action, deps) => {
 
   const points = questionPoints(forPoints);
 
-  let nextQuestions = await selectQuestionButtons(throwdown_id, round, deps);
+  const nextQuestions = await selectQuestionButtons(throwdown_id, round, deps);
+
+  const durationText =
+    duration > 60
+      ? `${(duration / 60).toFixed(2)} minutes`
+      : `${duration} ${duration === 1 ? 'second' : 'seconds'}`;
 
   let answerText = correct
     ? `Congratulations! You answered correctly ${
-        !question.bonus ? `in ${duration} seconds` : ''
+        !question.bonus ? `in ${durationText}` : ''
       } for ${points} points!`
-    : `Whoops...you spent ${duration} seconds thinking...only to get it wrong for ${points} points :/`;
-
-  if (nextQuestions[0].actions.length === 0) {
-    answerText += `\nYou're out of questions. Check out your leaderboard here: ${
-      process.env.URL_BASE
-    }/leaderboards/${throwdown_id}`;
-  }
+    : `Whoops...you spent ${durationText} thinking...only to get it wrong for ${points} points :/`;
 
   let answer = {
     text: answerText,
     color: correct ? '#04D34F' : '#F70400'
   };
 
+  const attachmentsToSend = [answer];
+
+  if (
+    nextQuestions[0].actions.length === 0 ||
+    nextQuestions[0].callback_id == 'leaderboard' ||
+    nextQuestions[0].callback_id == 'send_question_list'
+  ) {
+    const getRoundResponses = commandFactory('db')
+      .setEntity('Response')
+      .setOperation('find')
+      .setMatch({ throwdown: throwdown_id, round, user: user._id })
+      .setPopulate('question')
+      .save();
+
+    const roundResponses = await exec.one(dbInterface, getRoundResponses);
+
+    let correctCount = 0;
+    let correctPoints = 0;
+    let bonusCount = 0;
+    let bonusPoints = 0;
+    let incorrectCount = 0;
+    let incorrectPoints = 0;
+    let totalDuration = 0;
+
+    roundResponses.forEach(r => {
+      let points = questionPoints({
+        correct: r.correct,
+        bonus: r.bonus,
+        difficulty: r.question.difficulty,
+        duration: r.duration
+      });
+      if (r.bonus && r.correct) {
+        bonusCount += 1;
+        bonusPoints += points;
+      } else if (!r.bonus && r.correct) {
+        correctCount += 1;
+        correctPoints += points;
+        totalDuration += r.duration;
+      } else if (!r.bonus && !r.correct) {
+        incorrectCount += 1;
+        incorrectPoints += points;
+        totalDuration += r.duration;
+      }
+    });
+
+    attachmentsToSend.push({
+      color: '#F35A00',
+      text: ``,
+      fields: [
+        {
+          title: `Round ${round} Correct Answers`,
+          value: correctCount,
+          short: true
+        },
+        {
+          title: `Round ${round} Incorrect Answers`,
+          value: incorrectCount,
+          short: true
+        },
+        {
+          title: `Total Points Earned for Round ${round}`,
+          value: `${correctPoints}  -  ${-incorrectPoints} ${
+            bonusCount > 0 ? ` + ${bonusPoints} bonus ` : ''
+          } = ${correctPoints + incorrectPoints} points`,
+          short: true
+        },
+        {
+          title: 'Average Response Time',
+          value: `${totalDuration /
+            (correctCount + incorrectCount).toFixed(2)} seconds`,
+          short: true
+        }
+      ],
+      footer: `View leaderboard: ${
+        process.env.URL_BASE
+      }/leaderboards/${throwdown_id}`
+    });
+  }
+
+  attachmentsToSend.push(...nextQuestions);
+
   const newAnswer = commandFactory('slack')
     .setOperation('ephemeralMessage')
     .setChannel(channel_id)
     .setUser(user_id)
     .setText('')
-    .setAttachments([answer, ...nextQuestions])
+    .setAttachments(attachmentsToSend)
     .save();
 
-  exec.one(slack, newAnswer);
+  return await exec.one(slack, newAnswer);
 };
