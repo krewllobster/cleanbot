@@ -33,7 +33,8 @@ module.exports = async (payload, action, deps) => {
   let match = {
     user: user._id,
     question: question._id,
-    throwdown: throwdown_id
+    throwdown: throwdown_id,
+    round
   };
 
   let update = {
@@ -43,34 +44,53 @@ module.exports = async (payload, action, deps) => {
     requested,
     submitted,
     duration,
+    responded: true,
     bonus: question.bonus
   };
 
-  let { created, doc: newResponse } = await Response.findOrCreate(
-    match,
-    update
-  );
+  const getExistingResponse = commandFactory('db')
+    .setEntity('Response')
+    .setOperation('findOne')
+    .setMatch(match)
+    .save();
+
+  const exRes = await exec.one(dbInterface, getExistingResponse);
+
+  console.log('existing response, ', exRes);
+
+  if (exRes && exRes.responded) {
+    const sendAlreadyResponded = commandFactory('slack')
+      .setOperation('ephemeralMessage')
+      .setUser(user_id)
+      .setChannel(channel_id)
+      .setText(`You've already answered this question`)
+      .save();
+
+    return await exec.one(slack, sendAlreadyResponded);
+  }
+
+  const updateResponse = commandFactory('db')
+    .setEntity('Response')
+    .setOperation('findOneAndUpdate')
+    .setMatch(match)
+    .setUpdate(update)
+    .setOptions({ upsert: true, new: true })
+    .save();
+
+  const updatedResponseRes = await exec.one(dbInterface, updateResponse);
+  console.log('./././././././././././././');
+  console.log(updatedResponseRes);
 
   const forPoints = {
-    correct: newResponse.correct,
-    duration: newResponse.duration,
-    bonus: newResponse.bonus,
+    correct: updatedResponseRes.correct,
+    duration: updatedResponseRes.duration,
+    bonus: updatedResponseRes.bonus,
     difficulty: question.difficulty
   };
+
   console.log(forPoints);
 
   const points = questionPoints(forPoints);
-
-  if (!created) {
-    const alreadyAnswered = commandFactory('slack')
-      .setOperation('ephemeralMessage')
-      .setChannel(channel_id)
-      .setUser(user_id)
-      .setText('You have already answered this question!')
-      .save();
-
-    return await exec.one(slack, alreadyAnswered);
-  }
 
   let nextQuestions = await selectQuestionButtons(throwdown_id, round, deps);
 

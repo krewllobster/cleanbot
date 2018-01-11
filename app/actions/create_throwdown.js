@@ -1,5 +1,5 @@
 const agenda = require('../../agenda');
-const { singleThrowdown } = require('../attachments');
+const { singleThrowdown, welcomeMessage } = require('../attachments');
 const {
   processing: processingMessage,
   findFullThrowdown,
@@ -115,13 +115,16 @@ module.exports = async (payload, submission, deps) => {
 
   throwdown = await findFullThrowdown(deps, { matchFields: { _id: doc._id } });
 
+  let successTextPrivate = `Congrats, you’re the proud owner of a new invite-only throwdown! You should see a new channel in your channels list. Only people you invite below can join. Once you select their name, they’ll receive an invite message. You’ll get a message each time someone joins your throwdown. 
+  
+  To see a full list of participants and invitees, type "/rumble my throwdowns".`;
+  let successTextPublic = `Congrats, you’re the proud owner of a new public throwdown. You should see a new channel in your channels list. Anyone can see the Throwdown and join, but it’s up to you to promote it! So send a quick note to your coworkers like, “Join my throwdown. . . if you dare! It’s open to anyone. Just type /rumble list and press join!” 
+  
+  To see a full list of participants and invitees, type "/rumble my throwdowns".`;
+
   responseMessage = newThrowdownMessage
     .setText(
-      `Congratulations, your Throwdown has been set up! \n ${
-        throwdown.privacy === 'private'
-          ? 'You can invite people using the invite button below.'
-          : 'Your throwdown will now show up for anyone to join.'
-      }`
+      throwdown.privacy === 'private' ? successTextPrivate : successTextPublic
     )
     .setAttachments([singleThrowdown(throwdown, user_id, false)])
     .save();
@@ -212,7 +215,15 @@ const initChannel = async (throwdown, deps) => {
       .setUsers(usersToInvite)
       .save();
 
-    const response = await exec.one(slack, inviteBot);
+    await exec.one(slack, inviteBot);
+
+    const sendWelcomeMessage = commandFactory('slack')
+      .setOperation('basicMessage')
+      .setChannel(channel.id)
+      .setText(welcomeMessage(throwdown))
+      .save();
+
+    const response = exec.one(slack, sendWelcomeMessage);
 
     resolve(response);
   });

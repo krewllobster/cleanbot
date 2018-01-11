@@ -36,6 +36,20 @@ module.exports = async (payload, action, deps) => {
     round
   };
 
+  const updateResponse = commandFactory('db')
+    .setEntity('Response')
+    .setOperation('findOneAndUpdate')
+    .setMatch({
+      question: question._id,
+      user: user._id,
+      throwdown: throwdown_id,
+      round
+    })
+    .setUpdate({
+      responded: true
+    })
+    .save();
+
   const saveData = commandFactory('db')
     .setEntity('UserData')
     .setOperation('update')
@@ -47,7 +61,10 @@ module.exports = async (payload, action, deps) => {
     .setOptions({ upsert: true, new: true })
     .save();
 
-  const serverResponse = await exec.one(dbInterface, saveData);
+  const serverResponse = await exec.many([
+    [dbInterface, saveData],
+    [dbInterface, updateResponse]
+  ]);
 
   // const { nModified } = serverResponse;
 

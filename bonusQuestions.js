@@ -38,7 +38,7 @@ for (let i = 0; i < things.length; i++) {
           { text: `${t1.verb} ${t1.noun}`, correct: false },
           { text: `${t2.verb} ${t2.noun}`, correct: false },
           { text: 'Neither', correct: false },
-          { text: 'I like both!', correct: false }
+          { text: 'Both of them!', correct: false }
         ],
         answerType: 'mc',
         questionType: 'preference',

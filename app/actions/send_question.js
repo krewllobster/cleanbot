@@ -1,8 +1,4 @@
-const {
-  singleQuestion,
-  formatBonusQuestion,
-  formatCoworkerQuestion
-} = require('../attachments');
+const { singleQuestion } = require('../attachments');
 const { findFullThrowdown, shuffle } = require('../common');
 const sendBonus = require('./send_bonus');
 

@@ -136,7 +136,7 @@ module.exports = async (throwdown_id, round, deps) => {
   console.log('round totals');
   console.log(roundTotals);
 
-  const roundButtons = [];
+  let roundButtons = [];
 
   Object.keys(roundTotals).forEach(r => {
     let total = roundTotals[r];
@@ -146,6 +146,7 @@ module.exports = async (throwdown_id, round, deps) => {
   });
 
   console.log('round buttons');
+  console.log(roundButtons);
 
   //if any unfinished rounds, send list of round buttons
   if (roundButtons && roundButtons.length > 0) {

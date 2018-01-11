@@ -7,5 +7,6 @@ module.exports = {
   check_answer: require('./check_answer'),
   send_question_list: require('./send_question_list'),
   send_bonus: require('./send_bonus'),
-  save_user_data: require('./save_user_data')
+  save_user_data: require('./save_user_data'),
+  report_question: require('./report_question')
 };

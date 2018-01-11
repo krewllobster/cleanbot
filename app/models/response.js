@@ -7,6 +7,7 @@ const responseSchema = new mongoose.Schema({
   throwdown: { type: mongoose.Schema.Types.ObjectId, ref: 'Throwdown' },
   category: { type: Number, ref: 'Category', field: '_id' },
   correct: Boolean,
+  responded: { type: Boolean, default: false },
   bonus: { type: Boolean, default: false },
   coworker_id: { type: String, default: '' },
   round: Number,

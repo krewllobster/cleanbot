@@ -7,5 +7,6 @@ module.exports = {
   'all throwdowns': require('./listPublicThrowdowns'),
   'my throwdowns': require('./listUserThrowdowns'),
   leaderboard: require('./sendLeaderBoardLink'),
+  report: require('./sendReportDialog'),
   unknown: require('./unknown')
 };
