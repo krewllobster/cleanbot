@@ -1,79 +1,86 @@
-const SlackApi = ({user_token, bot_token}) => {
-  const WebClient = require('@slack/client').WebClient
+const SlackApi = ({ user_token, bot_token }) => {
+  const WebClient = require('@slack/client').WebClient;
 
   const clients = {
     userClient: new WebClient(user_token),
     botClient: new WebClient(bot_token)
-  }
+  };
 
-  const ops = (client) => ({
-    openDm: ({users}) => client.conversations.open({users}),
-    basicMessage: (command) => {
-      const {channel, text, attachments} = command
-      return client.chat.postMessage(channel, text, {attachments})
+  const ops = client => ({
+    openDm: ({ users }) => client.conversations.open({ users }),
+    basicMessage: command => {
+      const { channel, text, attachments } = command;
+      return client.chat.postMessage(channel, text, { attachments });
     },
-    ephemeralMessage: ({channel, text, user, attachments}) => {
-      return client.chat.postEphemeral(channel, text, user, {attachments, as_user: true})
+    ephemeralMessage: ({ channel, text, user, attachments }) => {
+      return client.chat.postEphemeral(channel, text, user, {
+        attachments,
+        as_user: true
+      });
     },
-    deleteMessage: ({ts, channel}) => {
-      return client.chat.delete(ts, channel, {as_user: true})
+    deleteMessage: ({ ts, channel }) => {
+      return client.chat.delete(ts, channel, { as_user: true });
     },
-    openDialog: ({dialog, trigger}) => {
-      return client.dialog.open(dialog, trigger)
+    openDialog: ({ dialog, trigger }) => {
+      return client.dialog.open(dialog, trigger);
     },
-    userInfo: ({user}) => {
-      return client.users.info(user)
+    userInfo: ({ user }) => {
+      return client.users.info(user);
     },
-    updateMessage: ({channel, ts, text, attachments}) => {
-      return client.chat.update(
-        ts, channel, text, {as_user: true, attachments}
-      )
+    updateMessage: ({ channel, ts, text, attachments }) => {
+      return client.chat.update(ts, channel, text, {
+        as_user: true,
+        attachments
+      });
     },
-    getChannels: (command) => {
-      return client.groups.list()
+    getChannels: command => {
+      return client.channels.list();
     },
-    createConversation: ({name, private}) => {
-      return client.conversations.create(name, {is_private: private})
+    getGroups: command => {
+      return client.groups.list();
     },
-    setTopic: ({channel, topic}) => {
-      return client.conversations.setTopic(channel, topic)
+    createConversation: ({ name, private }) => {
+      return client.conversations.create(name, { is_private: private });
     },
-    setPurpose: ({channel, purpose}) => {
-      return client.conversations.setPurpose(channel, purpose)
+    setTopic: ({ channel, topic }) => {
+      return client.conversations.setTopic(channel, topic);
     },
-    inviteToConversation: ({channel, users}) => {
-      return client.conversations.invite(channel, users)
+    setPurpose: ({ channel, purpose }) => {
+      return client.conversations.setPurpose(channel, purpose);
     },
-    renameConversation: ({channel, name}) => {
-      return client.conversations.rename(channel, name)
+    inviteToConversation: ({ channel, users }) => {
+      return client.conversations.invite(channel, users);
     },
-    archiveConversation: ({channel}) => {
-      return client.conversations.archive(channel)
+    renameConversation: ({ channel, name }) => {
+      return client.conversations.rename(channel, name);
     },
-    kickFromConversation: ({channel, user}) => {
-      return client.conversations.kick(channel, user)
+    archiveConversation: ({ channel }) => {
+      return client.conversations.archive(channel);
     },
-    addPin: ({channel, ts}) => {
-      return client.pins.add(channel, {timestamp: ts})
+    kickFromConversation: ({ channel, user }) => {
+      return client.conversations.kick(channel, user);
+    },
+    addPin: ({ channel, ts }) => {
+      return client.pins.add(channel, { timestamp: ts });
     }
-  })
+  });
 
   return {
     name: 'slackAPI interface',
-    execute: (command) => {
-      const client = clients[command.client]
-      return ops(client)[command.operation](command)
+    execute: command => {
+      const client = clients[command.client];
+      return ops(client)[command.operation](command);
     },
-    executeMany: (commandList) => {
-      let promises = []
+    executeMany: commandList => {
+      let promises = [];
       commandList.forEach(c => {
-        const client = clients[c.client]
-        promises.push(ops(client)[c.operation](c))
-      })
-      return Promise.all(promises)
+        const client = clients[c.client];
+        promises.push(ops(client)[c.operation](c));
+      });
+      return Promise.all(promises);
     }
-  }
-}
+  };
+};
 // class SlackApi {
 //   constructor({user_token, bot_token}) {
 //     this.userClient = new WebClient(user_token)
@@ -133,4 +140,4 @@ const SlackApi = ({user_token, bot_token}) => {
 //   }
 // }
 
-module.exports = SlackApi
+module.exports = SlackApi;

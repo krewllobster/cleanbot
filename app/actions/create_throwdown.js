@@ -53,9 +53,19 @@ module.exports = async (payload, submission, deps) => {
   if (name) {
     const getGroupList = commandFactory('slack')
       .setClient('userClient')
+      .setOperation('getGroups')
+      .save();
+
+    const getChannelList = commandFactory('slack')
+      .setClient('userClient')
       .setOperation('getChannels')
       .save();
 
+    const [{ groups }, { channels }] = await exec.many([
+      [slack, getGroupList],
+      [slack, getChannelList]
+    ]);
+    const allNames = [...groups, ...channels].map(x => x.name);
     const channelName = name
       .split(' ')
       .join('_')
@@ -70,10 +80,8 @@ module.exports = async (payload, submission, deps) => {
       return await exec.one(slack, invalidNameMessage);
     }
 
-    const { groups } = await exec.one(slack, getGroupList);
-
     //if public, private, or archived channel shares name, send error
-    if (groups && groups.some(c => c.name === channelName)) {
+    if (allNames.some(c => c.name === channelName)) {
       console.log('throwdown channel name was already taken');
       const nameTakenMessage = errorBase
         .setText('That name is already taken. Please try again!')
