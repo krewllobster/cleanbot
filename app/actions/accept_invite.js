@@ -10,6 +10,26 @@ module.exports = async (payload, action, deps) => {
   const { throwdown_id, user_to_invite, owner } = JSON.parse(action.value);
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
+  const getThrowdown = commandFactory('db')
+    .setEntity('Throwdown')
+    .setOperation('findOne')
+    .setMatch({ _id: throwdown_id })
+    .save();
+
+  let throwdownExists = await exec.one(dbInterface, getThrowdown);
+
+  if (!throwdownExists) {
+    const sendError = commandFactory('slack')
+      .setOperation('updateMessage')
+      .setTs(message_ts)
+      .setChannel(channel_id)
+      .setText('Whoops, it looks like this Throwdown was already deleted.')
+      .setAttachments([])
+      .save();
+
+    return await exec.one(slack, sendError);
+  }
+
   const accepted = action.name === 'accept_invite';
 
   const updateThrowdownBase = commandFactory('db')
