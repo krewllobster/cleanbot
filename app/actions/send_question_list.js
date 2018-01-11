@@ -14,6 +14,34 @@ module.exports = async (payload, action, deps) => {
 
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
+  //prevent channel members that are not throwdown participants from getting questions.
+  const getParticipants = commandFactory('db')
+    .setOperation('findOne')
+    .setEntity('Throwdown')
+    .setMatch({ _id: throwdown_id })
+    .setPopulate('created_by')
+    .save();
+
+  const { participants, created_by } = await exec.one(
+    dbInterface,
+    getParticipants
+  );
+
+  if (!participants.map(p => p.toString()).includes(user._id.toString())) {
+    const sendAdminMessage = commandFactory('slack')
+      .setOperation('ephemeralMessage')
+      .setUser(user_id)
+      .setChannel(channel_id)
+      .setText(
+        `You have access to this channel but are not a member of this Throwdown.\n\nTo join this throwdown, type "/rumble list" to see public throwdowns, or message <@${
+          created_by.user_id
+        }> to request an invite.`
+      )
+      .save();
+
+    return await exec.one(slack, sendAdminMessage);
+  }
+
   const questionsToAttach = await selectQuestionButtons(
     throwdown_id,
     round,
