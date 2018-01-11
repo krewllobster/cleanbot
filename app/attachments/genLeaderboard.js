@@ -104,8 +104,6 @@ const genLeaderBoard = async throwdown_id => {
     obj[name] = currentPoints + points;
     return obj;
   }, {});
-  console.log('simple data found');
-  console.log(dataReduced);
 
   const simpleData = Object.keys(dataReduced).map(k => {
     return { user: k, points: dataReduced[k] };
@@ -146,8 +144,6 @@ const genLeaderBoard = async throwdown_id => {
   //     return [k, ...rounds, d.points];
   //   })
   // ];
-  console.log(full);
-  console.log('returning data from genLeaderboard');
   return full;
 };
 

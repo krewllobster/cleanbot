@@ -3,6 +3,7 @@ const { findFullThrowdown, shuffle } = require('../common');
 const sendBonus = require('./send_bonus');
 
 module.exports = async (payload, action, deps) => {
+  console.log('sending questions');
   const {
     user: { id: user_id },
     team: { id: team_id },
@@ -36,8 +37,6 @@ module.exports = async (payload, action, deps) => {
     [dbInterface, getResponses],
     [dbInterface, getUserData]
   ]);
-
-  console.log(thisUserData);
 
   const thisRoundResponses = allResponses.filter(
     r => r.round == round && r.throwdown == throwdown_id

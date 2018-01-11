@@ -3,8 +3,7 @@ const questionRoundButton = require('./questionRoundButton');
 const singleQuestion = require('./singleQuestion');
 
 module.exports = async (throwdown_id, round, deps) => {
-  console.log('selecting next questions');
-  console.log('for round ', round);
+  console.log('selecting next questions for round ', round);
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
   //ALL responses belonging to user
@@ -64,9 +63,6 @@ module.exports = async (throwdown_id, round, deps) => {
   });
 
   const bonusAnsweredThisRound = [...roundBonusResponses, ...roundUserData];
-
-  console.log('bonus answered this round ________________');
-  console.log(bonusAnsweredThisRound);
 
   let actions = [];
 
@@ -133,10 +129,7 @@ module.exports = async (throwdown_id, round, deps) => {
   allBonusResponses.forEach(r => (roundTotals[r.round] += 1));
   userData.forEach(u => (roundTotals[u.round] += 1));
 
-  console.log('round totals');
-  console.log(roundTotals);
-
-  let roundButtons = [];
+  const roundButtons = [];
 
   Object.keys(roundTotals).forEach(r => {
     let total = roundTotals[r];
@@ -147,10 +140,13 @@ module.exports = async (throwdown_id, round, deps) => {
 
   console.log('round buttons');
   console.log(roundButtons);
+  console.log(roundButtons.length);
 
+  const questionNumber = roundButtons.length;
+  console.log('there are ', questionNumber, ' questions left');
   //if any unfinished rounds, send list of round buttons
-  if (roundButtons && roundButtons.length > 0) {
-    return [
+  if (questionNumber > 0) {
+    let toReturn = [
       {
         color: brandColor,
         text: `You have some unfinished rounds -- do them while you're hot!`,
@@ -158,16 +154,21 @@ module.exports = async (throwdown_id, round, deps) => {
         actions: roundButtons
       }
     ];
+    console.log('has questions ', toReturn);
+    return toReturn;
   }
 
   //otherwise send back a leaderboard message
   //TODO: this is where to send back a roundup. Can do based on responses
+  console.log('no questions, returning something else');
   return [
     {
       color: brandColor,
-      text: `Nice. You've completed round ${round}.\nYou can find your leaderboard here: ${
+      text: `You can find your leaderboard here: ${
         process.env.URL_BASE
-      }/leaderboards/${throwdown_id}`
+      }/leaderboards/${throwdown_id}`,
+      actions: [],
+      callback_id: 'send_question_list'
     }
   ];
 };

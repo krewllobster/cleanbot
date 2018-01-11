@@ -16,9 +16,6 @@ module.exports = async (payload, action, deps) => {
     action.value
   );
 
-  console.log('checking answer action value');
-  console.log(JSON.parse(action.value));
-
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
   if (!requested) requested = new Date();
@@ -56,8 +53,6 @@ module.exports = async (payload, action, deps) => {
 
   const exRes = await exec.one(dbInterface, getExistingResponse);
 
-  console.log('existing response, ', exRes);
-
   if (exRes && exRes.responded) {
     const sendAlreadyResponded = commandFactory('slack')
       .setOperation('ephemeralMessage')
@@ -78,8 +73,6 @@ module.exports = async (payload, action, deps) => {
     .save();
 
   const updatedResponseRes = await exec.one(dbInterface, updateResponse);
-  console.log('./././././././././././././');
-  console.log(updatedResponseRes);
 
   const forPoints = {
     correct: updatedResponseRes.correct,
@@ -87,8 +80,6 @@ module.exports = async (payload, action, deps) => {
     bonus: updatedResponseRes.bonus,
     difficulty: question.difficulty
   };
-
-  console.log(forPoints);
 
   const points = questionPoints(forPoints);
 
