@@ -1,15 +1,16 @@
-
-module.exports = ({participants, invitees, _id}) => {
-  let participantList, inviteeList
+const { brandColor } = require('../constants');
+module.exports = ({ participants, invitees, _id }) => {
+  let participantList, inviteeList;
   if (participants[0]) {
-    participantList = participants.map(p => `<@${p.user_id}>`).join(', ')
+    participantList = participants.map(p => `<@${p.user_id}>`).join(', ');
   }
 
   if (invitees[0]) {
-    inviteeList = invitees.map(i => `<@${i.user_id}>`).join(', ')
+    inviteeList = invitees.map(i => `<@${i.user_id}>`).join(', ');
   }
 
-  return [{
+  return [
+    {
       title: 'Current participants:',
       text: participantList,
       mrkdwn_in: ['text']
@@ -31,5 +32,6 @@ module.exports = ({participants, invitees, _id}) => {
           data_source: 'users'
         }
       ]
-  }]
-}
+    }
+  ];
+};

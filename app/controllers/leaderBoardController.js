@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
 
   const svgStyles = `
     .bar-text {
-      fill: black;
+      fill: white;
       font: ${barHeight / 3}px sans-serif;
       text-anchor: middle;
     }
@@ -61,13 +61,14 @@ module.exports = async (req, res) => {
   const d3 = d3n.d3;
   let minScore = d3.min(data, d => d.points);
   let maxScore = d3.max(data, d => d.points);
-  const scoreRange = maxScore - minScore;
-  if (minScore == maxScore) {
+  if (data.length == 1) {
     if (minScore < 0) maxScore = 0;
-    if (maxScore > 0) minScore = 0;
+    if (minScore > 0) minScore = 0;
+  } else {
+    if (minScore > 0) minScore = 0;
+    if (maxScore < 0) maxScore = 0;
   }
-  if (minScore > 0) minScore = 0;
-  if (maxScore < 0) maxScore = 0;
+  const scoreRange = maxScore - minScore;
 
   const x = d3
     .scaleLinear()
@@ -112,6 +113,8 @@ module.exports = async (req, res) => {
 
   bar
     .append('rect')
+    .attr('rx', 6)
+    .attr('ry', 6)
     .attr('class', d => (d.points < 0 ? 'bar-rect-neg' : 'bar-rect-pos'))
     .attr('x', d => (d.points < 0 ? x(d.points) : x(0)))
     .attr('height', y.bandwidth())

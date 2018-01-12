@@ -1,49 +1,48 @@
-const moment = require('moment')
+const moment = require('moment');
+const { brandColor } = require('../constants');
 
 module.exports = (throwdown, user_id, public) => {
-  const buttonList = buttons({throwdown_id: throwdown._id, public})
+  const buttonList = buttons({ throwdown_id: throwdown._id, public });
 
-  const started = moment().isSameOrAfter(throwdown.start_date, 'day')
-  const private = throwdown.privacy === 'private'
-  const isOwner = throwdown.created_by.user_id === user_id
-  const canJoin = !throwdown.participants.some(p => p.user_id === user_id)
+  const started = moment().isSameOrAfter(throwdown.start_date, 'day');
+  const private = throwdown.privacy === 'private';
+  const isOwner = throwdown.created_by.user_id === user_id;
+  const canJoin = !throwdown.participants.some(p => p.user_id === user_id);
 
-  let actions = []
+  let actions = [];
 
-  if (isOwner && private)   actions.push(buttonList.invite)
-  if (isOwner && !canJoin)  actions.push(buttonList.delete)
-  if (!isOwner && canJoin)  actions.push(buttonList.join)
-  if (!isOwner && !canJoin) actions.push(buttonList.leave)
+  if (isOwner && private) actions.push(buttonList.invite);
+  if (isOwner && !canJoin) actions.push(buttonList.delete);
+  if (!isOwner && canJoin) actions.push(buttonList.join);
+  if (!isOwner && !canJoin) actions.push(buttonList.leave);
 
   return {
+    color: brandColor,
     title: throwdown.name,
     callback_id: 'throwdown_action',
     fields: [
       {
         title: 'Question Categories:',
-        value: `${
-          throwdown.categories.reduce(
-            (accumulator, category, index) => {
-              return accumulator + `${index+1}. ${category.name}\n`
-            },
-            ''
-          )
-        }`
+        value: `${throwdown.categories.reduce(
+          (accumulator, category, index) => {
+            return accumulator + `${index + 1}. ${category.name}\n`;
+          },
+          ''
+        )}`
       },
       {
         title: 'Participants:',
-        value: `${
-          throwdown.participants.reduce(
-            (accumulator, participant) => {
-              return accumulator + `<@${participant.user_id}|${participant.user_name}>`
-            },
-            ''
-          )
-        }`
+        value: `${throwdown.participants.reduce((accumulator, participant) => {
+          return (
+            accumulator + `<@${participant.user_id}|${participant.user_name}>`
+          );
+        }, '')}`
       },
       {
         title: 'Created By:',
-        value: `<@${throwdown.created_by.user_id}|${throwdown.created_by.user_name}>`,
+        value: `<@${throwdown.created_by.user_id}|${
+          throwdown.created_by.user_name
+        }>`,
         short: true
       },
       {
@@ -52,20 +51,18 @@ module.exports = (throwdown, user_id, public) => {
         short: true
       }
     ],
-  actions,
-  "mrkdwn_in": [
-        "text",
-        "pretext"
-    ],
-  }
-}
+    actions,
+    mrkdwn_in: ['text', 'pretext']
+  };
+};
 
-const buttons = ({throwdown_id, public}) => {
-  const val = (command) => JSON.stringify({
-    throwdown_id,
-    command,
-    public,
-  })
+const buttons = ({ throwdown_id, public }) => {
+  const val = command =>
+    JSON.stringify({
+      throwdown_id,
+      command,
+      public
+    });
 
   return {
     join: {
@@ -85,7 +82,7 @@ const buttons = ({throwdown_id, public}) => {
         title: 'Are you sure?',
         text: 'If this throwdown has started, you will not be able to rejoin!',
         ok_text: 'Yes, leave this Throwdown',
-        dismiss_text: 'No, stay in this Throwdown',
+        dismiss_text: 'No, stay in this Throwdown'
       }
     },
     delete: {
@@ -98,15 +95,15 @@ const buttons = ({throwdown_id, public}) => {
         title: 'Are you sure?',
         text: 'Deleting this Throwdown cannot be undone',
         ok_text: 'Yes, delete this Throwdown',
-        dismiss_text: 'No, keep this Throwdown',
-      },
+        dismiss_text: 'No, keep this Throwdown'
+      }
     },
     invite: {
       text: 'Send Invites',
       name: 'send_invite_list',
       value: val('send_invite_list'),
       type: 'button',
-      style: 'primary',
+      style: 'primary'
     }
-  }
-}
+  };
+};
