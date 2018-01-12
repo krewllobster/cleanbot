@@ -153,7 +153,7 @@ module.exports = async (payload, submission, deps) => {
   console.log('starting questions at ', updatedThrowdown.start_date);
 
   questionsJob.schedule(updatedThrowdown.start_date);
-  questionsJob.repeatEvery('10 seconds');
+  questionsJob.repeatEvery('6 hours');
   questionsJob.save();
 };
 

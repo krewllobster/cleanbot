@@ -8,5 +8,6 @@ module.exports = {
   genLeaderboard: require('./genLeaderboard'),
   questionRoundButton: require('./questionRoundButton'),
   welcomeMessage: require('./welcomeMessage'),
-  formatBonus: require('./formatBonus')
+  formatBonus: require('./formatBonus'),
+  roundSummary: require('./roundSummary')
 };

@@ -1,4 +1,8 @@
-const { genLeaderboard, selectQuestionButtons } = require('../attachments');
+const {
+  genLeaderboard,
+  selectQuestionButtons,
+  roundSummary
+} = require('../attachments');
 
 module.exports = async (payload, action, deps) => {
   const {
@@ -77,6 +81,10 @@ module.exports = async (payload, action, deps) => {
   );
 
   console.log(serverResponse);
+
+  const rSummary = await roundSummary({ throwdown: throwdown_id, round }, deps);
+
+  if (rSummary) questionAttachments.unshift(rSummary);
 
   const successMessage = commandFactory('slack')
     .setOperation('ephemeralMessage')

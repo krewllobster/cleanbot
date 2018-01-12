@@ -1,5 +1,9 @@
 const { findFullThrowdown, questionPoints } = require('../common');
-const { selectQuestionButtons, genLeaderboard } = require('../attachments');
+const {
+  selectQuestionButtons,
+  genLeaderboard,
+  roundSummary
+} = require('../attachments');
 const { Response } = require('../models');
 
 module.exports = async (payload, action, deps) => {
@@ -102,83 +106,18 @@ module.exports = async (payload, action, deps) => {
   };
 
   const attachmentsToSend = [answer];
-
+  console.log('nextQuestions to send ------');
+  console.log(nextQuestions);
   if (
     nextQuestions[0].actions.length === 0 ||
     nextQuestions[0].callback_id == 'leaderboard' ||
     nextQuestions[0].callback_id == 'send_question_list'
   ) {
-    const getRoundResponses = commandFactory('db')
-      .setEntity('Response')
-      .setOperation('find')
-      .setMatch({ throwdown: throwdown_id, round, user: user._id })
-      .setPopulate('question')
-      .save();
-
-    const roundResponses = await exec.one(dbInterface, getRoundResponses);
-
-    let correctCount = 0;
-    let correctPoints = 0;
-    let bonusCount = 0;
-    let bonusPoints = 0;
-    let incorrectCount = 0;
-    let incorrectPoints = 0;
-    let totalDuration = 0;
-
-    roundResponses.forEach(r => {
-      let points = questionPoints({
-        correct: r.correct,
-        bonus: r.bonus,
-        difficulty: r.question.difficulty,
-        duration: r.duration
-      });
-      if (r.bonus && r.correct) {
-        bonusCount += 1;
-        bonusPoints += points;
-      } else if (!r.bonus && r.correct) {
-        correctCount += 1;
-        correctPoints += points;
-        totalDuration += r.duration;
-      } else if (!r.bonus && !r.correct) {
-        incorrectCount += 1;
-        incorrectPoints += points;
-        totalDuration += r.duration;
-      }
-    });
-
-    attachmentsToSend.push({
-      color: '#F35A00',
-      text: ``,
-      fields: [
-        {
-          title: `Round ${round} Correct Answers`,
-          value: correctCount,
-          short: true
-        },
-        {
-          title: `Round ${round} Incorrect Answers`,
-          value: incorrectCount,
-          short: true
-        },
-        {
-          title: `Total Points Earned for Round ${round}`,
-          value: `${correctPoints}  -  ${-incorrectPoints} ${
-            bonusCount > 0 ? ` + ${bonusPoints} bonus ` : ''
-          } = ${correctPoints + incorrectPoints} points`,
-          short: true
-        },
-        {
-          title: 'Average Response Time',
-          value: `${(totalDuration / (correctCount + incorrectCount)).toFixed(
-            2
-          )} seconds`,
-          short: true
-        }
-      ],
-      footer: `View leaderboard: ${
-        process.env.URL_BASE
-      }/leaderboards/${throwdown_id}`
-    });
+    let rSummary = await roundSummary({ throwdown: throwdown_id, round }, deps);
+    console.log(rSummary);
+    if (rSummary) {
+      attachmentsToSend.push(rSummary);
+    }
   }
 
   attachmentsToSend.push(...nextQuestions);
