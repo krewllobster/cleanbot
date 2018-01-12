@@ -169,8 +169,9 @@ module.exports = async (payload, action, deps) => {
         },
         {
           title: 'Average Response Time',
-          value: `${totalDuration /
-            (correctCount + incorrectCount).toFixed(2)} seconds`,
+          value: `${(totalDuration / (correctCount + incorrectCount)).toFixed(
+            2
+          )} seconds`,
           short: true
         }
       ],

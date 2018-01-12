@@ -16,25 +16,32 @@ module.exports = async (payload, action, deps) => {
   //dependencies
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
+  const getThrowdown = commandFactory('db')
+    .setEntity('Throwdown')
+    .setOperation('findOne')
+    .setMatch({ _id: action.name })
+    .save();
+
+  const throwdownExists = await exec.one(dbInterface, getThrowdown);
+
+  if (!throwdownExists) {
+    const noThrowdownMessage = commandFactory('slack')
+      .setOperation('updateMessage')
+      .setTs(message_ts)
+      .setChannel(channel_id)
+      .setText(`Look's like this Throwdown doesn't exist. Sorry!`)
+      .setAttachments([])
+      .save();
+
+    return await exec.one(slack, noThrowdownMessage);
+  }
+
   const [userInvited, throwdown] = await Promise.all([
     findOrCreateUser(deps, { team_id, user_id: toInviteId }),
     findFullThrowdown(deps, { matchFields: { _id: action.name } })
   ]);
   //empty list of promise commands to concurrently execute
   let execList = [];
-
-  console.log(userInvited);
-
-  if (!throwdown) {
-    const noThrowdownMessage = commandFactory('slack')
-      .setOperation('updateMessage')
-      .setTs(message_ts)
-      .setChannel(channel_id)
-      .setText(`Look's like this Throwdown doesn't exist. Sorry!`)
-      .save();
-
-    return await exec.one(slack, noThrowdownMessage);
-  }
 
   if (throwdown) {
     const alreadyParticipating = throwdown.participants.some(

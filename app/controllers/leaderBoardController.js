@@ -16,12 +16,15 @@ module.exports = async (req, res) => {
 
   const svgStyles = `
     .bar-text {
-      fill: steelblue;
+      fill: black;
       font: ${barHeight / 3}px sans-serif;
-      text-anchor: start;
+      text-anchor: middle;
     }
-    .bar-rect {
+    .bar-rect-pos {
       fill: steelblue;
+    }
+    .bar-rect-neg {
+      fill: red;
     }
     .axis text {
       font: 25px sans-serif;
@@ -56,11 +59,20 @@ module.exports = async (req, res) => {
 
   const d3n = new D3Node(options);
   const d3 = d3n.d3;
+  let minScore = d3.min(data, d => d.points);
+  let maxScore = d3.max(data, d => d.points);
+  const scoreRange = maxScore - minScore;
+  if (minScore == maxScore) {
+    if (minScore < 0) maxScore = 0;
+    if (maxScore > 0) minScore = 0;
+  }
+  if (minScore > 0) minScore = 0;
+  if (maxScore < 0) maxScore = 0;
 
   const x = d3
     .scaleLinear()
     .range([0, width])
-    .domain([0, d3.max(data, d => d.points) + 50]);
+    .domain([minScore, maxScore]);
 
   const y = d3.scaleBand().range([height, 0]);
 
@@ -90,7 +102,7 @@ module.exports = async (req, res) => {
   chart
     .append('g')
     .attr('class', 'y axis')
-    .call(d3.axisLeft(y));
+    .call(d3.axisLeft(y).tickPadding(10));
 
   const bar = chart
     .selectAll('.bar')
@@ -100,11 +112,11 @@ module.exports = async (req, res) => {
 
   bar
     .append('rect')
-    .attr('class', 'bar-rect')
-    .attr('x', 0)
+    .attr('class', d => (d.points < 0 ? 'bar-rect-neg' : 'bar-rect-pos'))
+    .attr('x', d => (d.points < 0 ? x(d.points) : x(0)))
     .attr('height', y.bandwidth())
     .attr('y', d => y(d.user))
-    .attr('width', d => x(d.points));
+    .attr('width', d => width * (Math.abs(d.points) / scoreRange));
   // .on('mousemove', d => {
   //   tooltip
   //     .style('left', `${d3.event.page - 50}px`)
@@ -113,12 +125,11 @@ module.exports = async (req, res) => {
   //     .html(`${d.user}<br>${d.points}`)
   // })
   // .on('mouseout', d => tooltip.style('display', 'none'))
-
   bar
     .append('text')
     .attr('class', 'bar-text')
     .text(d => d.points)
-    .attr('x', d => x(d.points) + 10)
+    .attr('x', d => x(d.points / 2))
     .attr('y', d => y(d.user))
     .attr('dy', '1.25em');
 
