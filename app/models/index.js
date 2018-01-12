@@ -6,5 +6,6 @@ module.exports = {
   Question: require('./question'),
   Response: require('./response'),
   // Bonus: require('./bonus'),
-  UserData: require('./userData')
+  UserData: require('./userData'),
+  Feedback: require('./feedback')
 };

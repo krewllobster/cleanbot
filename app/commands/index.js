@@ -8,5 +8,7 @@ module.exports = {
   'my throwdowns': require('./listUserThrowdowns'),
   leaderboard: require('./sendLeaderBoardLink'),
   report: require('./sendReportDialog'),
-  unknown: require('./unknown')
+  unknown: require('./unknown'),
+  feedback: require('./sendFeedback'),
+  'send feedback': require('./sendFeedback')
 };
