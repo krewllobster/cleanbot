@@ -39,6 +39,9 @@ module.exports = function(agenda) {
 
     const updateResponse = await exec.one(dbInterface, findAndUpdateFeedback);
 
+    console.log('updateResponse');
+    console.log(updateResponse);
+
     if (updateResponse) {
       const sendFeedbackSuccess = commandFactory('slack')
         .setOperation('ephemeralMessage')

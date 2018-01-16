@@ -49,8 +49,6 @@ module.exports = function(agenda) {
       .setChannel(fullThrowdown.channel)
       .save();
 
-    console.log('send question command', sendQuestions);
-
     const { ts } = await exec
       .one(slack, sendQuestions)
       .catch(e => console.log(e));
