@@ -50,7 +50,7 @@ module.exports = function(agenda) {
         .setText('Your feedback has been received and saved. Thank you!')
         .save();
 
-      let upRes = await exec.one(dbInterface, sendFeedbackSuccess);
+      let upRes = await exec.one(slack, sendFeedbackSuccess);
       console.log('success ephemeral response');
       console.log(upRes);
     } else {
