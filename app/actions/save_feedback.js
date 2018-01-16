@@ -1,7 +1,5 @@
 const agenda = require('../../agenda');
 
-const { user, channel_id, description, submitted } = job.attrs.data;
-
 module.exports = async (payload, submission, deps) => {
   const { channel: { id: channel_id } } = payload;
 
