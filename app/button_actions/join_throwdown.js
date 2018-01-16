@@ -14,7 +14,7 @@ module.exports = async (data, deps) => {
 
   const updateThrowdownParticipant = commandFactory('db')
     .setEntity('Throwdown')
-    .setOperation('update')
+    .setOperation('findOneAndUpdate')
     .setmatch({ _id: throwdown_id })
     .setUpdate({ $push: { participants: user_id } })
     .save();
