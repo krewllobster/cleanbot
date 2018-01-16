@@ -19,11 +19,15 @@ module.exports = async (data, deps) => {
     .setUpdate({ $push: { participants: user_id } })
     .save();
 
+  console.log('finding one and updating');
+
   const throwdown = await exec.one(dbInterface, updateThrowdownParticipant);
   // const throwdown = await findFullThrowdown(deps, {
   //   matchFields: { _id: throwdown_id },
   //   updateFields: { $push: { participants: user._id } }
   // });
+
+  console.log(throwdown);
 
   const confirmMessageBase = commandFactory('slack')
     .setOperation('updateMessage')
