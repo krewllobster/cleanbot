@@ -121,7 +121,17 @@ module.exports = async (payload, submission, deps) => {
 
   console.log('throwdown successfully created');
 
-  throwdown = await findFullThrowdown(deps, { matchFields: { _id: doc._id } });
+  //added
+  const findFullThrowdown = commandFactory('db')
+    .setOperation('findFull')
+    .setEntity('Throwdown')
+    .setMatch({ _id: doc._id })
+    .save();
+  //added
+
+  throwdown = await exec.one(dbInterface, findFullThrowdown);
+
+  // throwdown = await findFullThrowdown(deps, { matchFields: { _id: doc._id } });
 
   let successTextPrivate = `Congrats, you’re the proud owner of a new invite-only throwdown! You should see a new channel in your channels list. Only people you invite below can join. Once you select their name, they’ll receive an invite message. You’ll get a message each time someone joins your throwdown. 
   

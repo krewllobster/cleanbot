@@ -26,6 +26,16 @@ const throwdownSchema = new mongoose.Schema(
 
 throwdownSchema.plugin(findOrCreate);
 
+throwdownSchema.statics.findFull = function(match) {
+  return this.find(match).populate([
+    { path: 'created_by', model: 'User' },
+    { path: 'participants', model: 'User' },
+    { path: 'invitees', model: 'User' },
+    { path: 'categories', model: 'Category' },
+    { path: 'questions.question', model: 'Question' }
+  ]);
+};
+
 const Throwdown = mongoose.model('Throwdown', throwdownSchema);
 
 module.exports = Throwdown;
