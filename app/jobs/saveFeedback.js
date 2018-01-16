@@ -50,7 +50,9 @@ module.exports = function(agenda) {
         .setText('Your feedback has been received and saved. Thank you!')
         .save();
 
-      await exec.one(dbInterface, sendFeedbackSuccess);
+      let upRes = await exec.one(dbInterface, sendFeedbackSuccess);
+      console.log('success ephemeral response');
+      console.log(upRes);
     } else {
       const sendReportError = commandFactory('slack')
         .setOperation('ephemeralMessage')
@@ -61,8 +63,12 @@ module.exports = function(agenda) {
         )
         .save();
 
-      await exec.one(slack, sendReportError);
+      let errRes = await exec.one(slack, sendReportError);
+      console.log('error ephemeral response');
+      console.log(errRes);
     }
+
+    console.log('job ending');
 
     done();
   });
