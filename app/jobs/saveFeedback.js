@@ -48,8 +48,6 @@ module.exports = function(agenda) {
         .save();
 
       await exec.one(dbInterface, sendFeedbackSuccess);
-
-      return done();
     } else {
       const sendReportError = commandFactory('slack')
         .setOperation('ephemeralMessage')
@@ -61,8 +59,6 @@ module.exports = function(agenda) {
         .save();
 
       await exec.one(slack, sendReportError);
-
-      return done();
     }
 
     done();
