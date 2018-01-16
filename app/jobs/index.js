@@ -1,3 +1,4 @@
-const sendQuestions = require('./sendQuestions')
+const sendQuestions = require('./sendQuestions');
+const saveFeedback = require('./saveFeedback');
 
-module.exports = [sendQuestions]
+module.exports = [sendQuestions, saveFeedback];

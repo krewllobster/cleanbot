@@ -72,7 +72,7 @@ module.exports = async ({ throwdown, round }, deps) => {
         {
           title: `Total Points Earned for Round ${round}`,
           value: `${correctPoints}  -  ${-incorrectPoints} ${
-            bonusCount > 0 ? ` + ${bonusPoints} bonus ` : ''
+            bonusCount > 0 ? ` +  ${bonusPoints}  ` : ''
           }  =  ${correctPoints + incorrectPoints + bonusPoints} points`,
           short: true
         },
