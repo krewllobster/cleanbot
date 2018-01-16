@@ -27,7 +27,7 @@ const throwdownSchema = new mongoose.Schema(
 throwdownSchema.plugin(findOrCreate);
 
 throwdownSchema.statics.findFull = function(match) {
-  return this.find(match).populate([
+  return this.findOne(match).populate([
     { path: 'created_by', model: 'User' },
     { path: 'participants', model: 'User' },
     { path: 'invitees', model: 'User' },
