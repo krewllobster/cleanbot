@@ -105,7 +105,8 @@ module.exports = async (payload, action, deps) => {
     .save();
 
   if (serverResponse) {
-    await genLeaderboard(throwdown_id);
+    // do not think this call is necessary. genLeaderboard gets called on page load.
+    // await genLeaderboard(throwdown_id);
     return await exec.one(slack, successMessage);
   } else {
     return await exec.one(slack, errorMessage);

@@ -27,7 +27,7 @@ module.exports = async ({ throwdown, round }, deps) => {
 
   let correctCount = 0;
   let correctPoints = 0;
-  let bonusCount = 0;
+  let bonusCount = 0 + roundUserData.length;
   let bonusPoints = 0 + roundUserData.length * 20;
   let incorrectCount = 0;
   let incorrectPoints = 0;
