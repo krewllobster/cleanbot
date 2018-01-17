@@ -53,7 +53,7 @@ module.exports = async (payload, action, deps) => {
 After you give an answer, you'll see this message again with your remaining questions.\nGood luck!!
   `;
 
-  if (questionsToAttach[0].actions.length === 0) {
+  if (!questionsToAttach.actions || questionsToAttach[0].actions.length === 0) {
     questionButtonText = `Look's like you've already answered all of the round ${round} questions!`;
   }
 
