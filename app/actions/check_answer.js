@@ -109,6 +109,7 @@ module.exports = async (payload, action, deps) => {
   console.log('nextQuestions to send ------');
   console.log(nextQuestions);
   if (
+    !nextQuestions ||
     nextQuestions[0].actions.length === 0 ||
     nextQuestions[0].callback_id == 'leaderboard' ||
     nextQuestions[0].callback_id == 'send_question_list'
