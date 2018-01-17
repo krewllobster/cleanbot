@@ -161,5 +161,5 @@ module.exports = async (throwdown_id, round, deps) => {
   //otherwise send back a leaderboard message
   //TODO: this is where to send back a roundup. Can do based on responses
   console.log('no questions, returning something else');
-  return [];
+  return false;
 };
