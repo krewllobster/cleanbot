@@ -121,7 +121,7 @@ module.exports = async (payload, action, deps) => {
     }
   }
 
-  attachmentsToSend.push(...nextQuestions);
+  if (!!nextQuestions) attachmentsToSend.push(...nextQuestions);
 
   const newAnswer = commandFactory('slack')
     .setOperation('ephemeralMessage')
