@@ -1,4 +1,4 @@
-const agenda = require('../../producer');
+const agenda = require('../../consumer');
 
 module.exports = async (payload, submission, deps) => {
   const { channel: { id: channel_id } } = payload;
@@ -14,5 +14,5 @@ module.exports = async (payload, submission, deps) => {
     user
   };
 
-  agenda().now('save feedback', jobData);
+  agenda.now('save feedback', jobData);
 };

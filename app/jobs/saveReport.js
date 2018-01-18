@@ -1,6 +1,7 @@
 const { commandFactory, dbInterface, slackApi, exec } = require('../domains');
 
 module.exports = function(agenda) {
+  console.log('defining save question report');
   agenda.define('save question report', async (job, done) => {
     console.log('saving report on question');
 

@@ -2,6 +2,7 @@ const { selectQuestionButtons, roundSummary } = require('../attachments');
 const { commandFactory, dbInterface, slackApi, exec } = require('../domains');
 
 module.exports = function(agenda) {
+  console.log('defining save user data');
   agenda.define('save user data', async (job, done) => {
     console.log('starting save user data job');
     const {

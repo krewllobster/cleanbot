@@ -1,4 +1,4 @@
-const agenda = require('../../producer');
+const agenda = require('../../consumer');
 module.exports = async (data, deps) => {
   const {
     message_ts,

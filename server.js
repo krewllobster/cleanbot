@@ -13,6 +13,12 @@ const ejs = require('ejs');
 //configure Mongoose
 mongoose.Promise = global.Promise;
 
+//initialize db
+const db = mongoose.connect(process.env.MONGO_URL, {
+  useMongoClient: true,
+  promiseLibrary: global.Promise
+});
+
 //app setup
 const app = express();
 const http = require('http').Server(app);

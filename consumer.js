@@ -38,10 +38,17 @@ async function run() {
 
   // `start()` is how you tell agenda to start processing jobs. If you just
   // want to produce (AKA schedule) jobs then don't call `start()`
+
+  agenda.on('complete', function(job) {
+    console.log('Job %s finished', job.attrs.name);
+  });
+
   agenda.start();
+
+  return agenda;
 }
 
-run().catch(error => {
+module.exports = run().catch(error => {
   console.error(error);
   process.exit(-1);
 });

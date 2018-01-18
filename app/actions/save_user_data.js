@@ -1,7 +1,8 @@
 const { selectQuestionButtons, roundSummary } = require('../attachments');
-const agenda = require('../../producer');
+const agenda = require('../../consumer');
 
 module.exports = async (payload, action, deps) => {
+  console.log('saving user data');
   const {
     user: { id: user_id },
     team: { id: team_id },
@@ -32,6 +33,7 @@ module.exports = async (payload, action, deps) => {
     round,
     channel_id
   };
+  console.log('sending to job');
 
-  agenda().now('save user data', jobData);
+  agenda.now('save user data', jobData);
 };
