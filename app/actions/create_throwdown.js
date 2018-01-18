@@ -1,4 +1,4 @@
-const agenda = require('../../consumer');
+const agenda = require('../../agenda');
 const { singleThrowdown, welcomeMessage } = require('../attachments');
 const { processing: processingMessage, findRandom } = require('../common');
 const moment = require('moment');

@@ -7,17 +7,11 @@ const mongoose = require('mongoose');
 const express = require('express');
 const ejs = require('ejs');
 
-// //initiate agenda
-// const agenda = require('./agenda');
+//initiate agenda
+const agenda = require('./agenda');
 
 //configure Mongoose
 mongoose.Promise = global.Promise;
-
-//initialize db
-const db = mongoose.connect(process.env.MONGO_URL, {
-  useMongoClient: true,
-  promiseLibrary: global.Promise
-});
 
 //app setup
 const app = express();

@@ -1,4 +1,5 @@
-const agenda = require('../../consumer');
+const agenda = require('../../agenda');
+
 module.exports = async (data, deps) => {
   const {
     message_ts,
@@ -93,9 +94,8 @@ module.exports = async (data, deps) => {
       .setOperation('basicMessage')
       .setChannel(channel.id)
       .setText(
-        `Throwdown "${deletedThrowdown.name}" has been deleted by ${
-          deletedThrowdown.created_by.user_id
-        }`
+        `Throwdown "${deletedThrowdown.name}" has been deleted by ${deletedThrowdown
+          .created_by.user_id}`
       )
       .save();
 

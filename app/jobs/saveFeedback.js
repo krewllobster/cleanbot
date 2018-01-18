@@ -1,7 +1,6 @@
 const { commandFactory, dbInterface, slackApi, exec } = require('../domains');
 
 module.exports = function(agenda) {
-  console.log('defining save feedback');
   agenda.define('save feedback', async (job, done) => {
     console.log('saving feedback from job');
 

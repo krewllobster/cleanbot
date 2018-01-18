@@ -1,4 +1,4 @@
-const agenda = require('../../consumer');
+const agenda = require('../../agenda');
 
 module.exports = async (payload, submission, deps) => {
   const { channel: { id: channel_id } } = payload;

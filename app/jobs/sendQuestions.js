@@ -2,7 +2,6 @@ const { commandFactory, dbInterface, slackApi, exec } = require('../domains');
 const { getQuestions } = require('../attachments');
 
 module.exports = function(agenda) {
-  console.log('defining send question buttons');
   agenda.define('send question buttons', async (job, done) => {
     console.log('starting send questions job');
     const { throwdown_id, team_id, user } = job.attrs.data;
