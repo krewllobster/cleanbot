@@ -7,8 +7,8 @@ const mongoose = require('mongoose');
 const express = require('express');
 const ejs = require('ejs');
 
-//initiate agenda
-const agenda = require('./agenda');
+// //initiate agenda
+// const agenda = require('./agenda');
 
 //configure Mongoose
 mongoose.Promise = global.Promise;
