@@ -1,6 +1,5 @@
 const { genLeaderboard } = require('../attachments');
 const D3Node = require('d3-node');
-const sharp = require('sharp');
 
 module.exports = async (req, res) => {
   const throwdownId = req.params['0'];
@@ -137,12 +136,6 @@ module.exports = async (req, res) => {
     .attr('dy', '1.25em');
 
   const html = d3n.svgString();
-  // console.log(html);
-  // const svgBuffer = new Buffer(html)
-  // await sharp(svgBuffer)
-  //   .toFile('./leaderboards/' + throwdownId + '.png')
-  //   .catch(err => console.log(err))
 
-  // res.sendFile(path.join(__dirname, '../../leaderboards', req.params['0'] + '.png'))
   res.render('leaderboard', { meta: rawData.meta, html: d3n.html() });
 };

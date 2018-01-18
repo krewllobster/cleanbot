@@ -1,7 +1,6 @@
 const { Response, Throwdown } = require('../models');
 const { questionPoints } = require('../common');
 const mongoose = require('mongoose');
-const d3 = require('d3');
 
 const genLeaderBoard = async throwdown_id => {
   console.log('attempting aggregation');
