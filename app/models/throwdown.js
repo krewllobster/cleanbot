@@ -26,7 +26,7 @@ const throwdownSchema = new mongoose.Schema(
 
 throwdownSchema.plugin(findOrCreate);
 
-throwdownSchema.statics.findFull = function(match) {
+throwdownSchema.statics.findFull = function(match = {}) {
   return this.findOne(match).populate([
     { path: 'created_by', model: 'User' },
     { path: 'participants', model: 'User' },
@@ -36,7 +36,21 @@ throwdownSchema.statics.findFull = function(match) {
   ]);
 };
 
-throwdownSchema.statics.findAll = function(match) {
+throwdownSchema.statics.findFullAndUpdate = function(
+  match = {},
+  update = {},
+  options = {}
+) {
+  return this.findOneAndUpdate(match, update, options).populate([
+    { path: 'created_by', model: 'User' },
+    { path: 'participants', model: 'User' },
+    { path: 'invitees', model: 'User' },
+    { path: 'categories', model: 'Category' },
+    { path: 'questions.question', model: 'Question' }
+  ]);
+};
+
+throwdownSchema.statics.findAll = function(match = {}) {
   return this.find(match).populate([
     { path: 'created_by', model: 'User' },
     { path: 'participants', model: 'User' },

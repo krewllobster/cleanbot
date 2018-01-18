@@ -11,7 +11,7 @@ module.exports = async (payload, action, deps) => {
     channel: { id: channel_id }
   } = payload;
   //action
-  const { name, selected_options } = action;
+  const { name: throwdown_id, selected_options } = action;
   const toInviteId = selected_options[0].value;
   //dependencies
   const { slack, dbInterface, commandFactory, exec, user } = deps;
@@ -19,7 +19,7 @@ module.exports = async (payload, action, deps) => {
   const getThrowdown = commandFactory('db')
     .setEntity('Throwdown')
     .setOperation('findOne')
-    .setMatch({ _id: action.name })
+    .setMatch({ _id: throwdown_id })
     .save();
 
   const throwdownExists = await exec.one(dbInterface, getThrowdown);
@@ -36,9 +36,15 @@ module.exports = async (payload, action, deps) => {
     return await exec.one(slack, noThrowdownMessage);
   }
 
+  const getFullThrowdown = commandFactory('db')
+    .setEntity('Throwdown')
+    .setOperation('findFull')
+    .setMatch({ _id: throwdown_id })
+    .save();
+
   const [userInvited, throwdown] = await Promise.all([
     findOrCreateUser(deps, { team_id, user_id: toInviteId }),
-    findFullThrowdown(deps, { matchFields: { _id: action.name } })
+    exec.one(dbInterface, getFullThrowdown)
   ]);
   //empty list of promise commands to concurrently execute
   let execList = [];
@@ -75,14 +81,41 @@ module.exports = async (payload, action, deps) => {
         .setUsers(userInvited.user_id)
         .save();
 
-      const getThrowdown = findFullThrowdown(deps, {
-        matchFields: { _id: throwdown._id },
-        updateFields: { $push: { invitees: userInvited._id } }
-      });
+      const getUpdatedThrowdown = commandFactory('db')
+        .setEntity('Throwdown')
+        .setOperation('findFullAndUpdate')
+        .setMatch({ _id: throwdown._id })
+        .setUpdate({ $push: { invitees: userInvited._id } })
+        .save();
 
-      const [{ channel: inviteeChannel }, updatedThrowdown] = await Promise.all(
-        [exec.one(slack, getChannel), getThrowdown]
-      );
+      // const getThrowdown = findFullThrowdown(deps, {
+      //   matchFields: { _id: throwdown._id },
+      //   updateFields: { $push: { invitees: userInvited._id } }
+      // });
+
+      // const [{ channel: inviteeChannel }, updatedThrowdown] = await Promise.all(
+      //   [exec.one(slack, getChannel), getThrowdown]
+      // );
+      const inviteResponse = await exec
+        .one(slack, getChannel)
+        .catch(async err => {
+          return false;
+        });
+
+      if (!inviteResponse) {
+        const rejectionNotice = commandFactory('slack')
+          .setOperation('updateMessage')
+          .setChannel(channel_id)
+          .setTs(message_ts)
+          .setText('You were unable to invite this user. They may be a bot!')
+          .save();
+
+        return await exec.one(slack, rejectionNotice);
+      }
+
+      const { channel: inviteeChannel } = inviteResponse;
+
+      const updatedThrowdown = exec.one(dbInterface, getUpdatedThrowdown);
 
       const inviteMessage = commandFactory('slack')
         .setOperation('basicMessage')
@@ -110,7 +143,6 @@ module.exports = async (payload, action, deps) => {
         .setAttachments(newAttachment)
         .setTs(message_ts)
         .setText(`I've sent an invite to <@${userInvited.user_id}>`)
-        .setTs(message_ts)
         .save();
 
       execList.push([slack, inviteMessage]);

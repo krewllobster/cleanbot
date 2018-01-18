@@ -13,19 +13,13 @@ module.exports = async (body, deps) => {
   const { channel } = await processing.next().value;
   const { ts } = await processing.next(channel).value;
 
-  const findAllThrowdowns = commandFactory('db')
+  const getAllThrowdowns = commandFactory('db')
     .setEntity('Throwdown')
-    .setOperation('find')
+    .setOperation('findAll')
     .setMatch({ team_id, privacy: 'public' })
-    .setPopulate([
-      { path: 'created_by', model: 'User' },
-      { path: 'participants', model: 'User' },
-      { path: 'invitees', model: 'User' },
-      { path: 'categories', model: 'Category' }
-    ])
     .save();
 
-  const throwdowns = await exec.one(dbInterface, findAllThrowdowns);
+  const throwdowns = await exec.one(dbInterface, getAllThrowdowns);
   const attachments = throwdowns.map(throwdown => {
     return singleThrowdown(throwdown, user_id, true);
   });

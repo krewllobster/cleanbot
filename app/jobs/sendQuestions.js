@@ -1,6 +1,4 @@
 const { commandFactory, dbInterface, slackApi, exec } = require('../domains');
-
-const { findFullThrowdown } = require('../common');
 const { getQuestions } = require('../attachments');
 
 module.exports = function(agenda) {
@@ -21,16 +19,17 @@ module.exports = function(agenda) {
       bot: { bot_access_token: bot_token }
     } = await exec.one(dbInterface, getKeys);
 
-    slack = slackApi({ user_token, bot_token });
+    deps.slack = slackApi({ user_token, bot_token });
 
-    deps.slack = slack;
+    const getUpdatedThrowdown = commandFactory('db')
+      .setEntity('Throwdown')
+      .setOperation('findFullAndUpdate')
+      .setMatch({ _id: throwdown_id })
+      .setUpdate({ $inc: { round: 1 } })
+      .setOptions({ new: true })
+      .save();
 
-    const fullThrowdown = await findFullThrowdown(deps, {
-      matchFields: { _id: throwdown_id },
-      updateFields: { $inc: { round: 1 } }
-    });
-
-    console.log('full throwdown found. round is: ', fullThrowdown.round);
+    const fullThrowdown = await exec.one(dbInterface, getUpdatedThrowdown);
 
     if (fullThrowdown.round > 10) {
       console.log('throwdown round is past 10, need to terminate job');
@@ -41,8 +40,7 @@ module.exports = function(agenda) {
     }
 
     const questionButton = getQuestions(fullThrowdown, user);
-    console.log('questionButton');
-    console.log(questionButton);
+
     const sendQuestions = commandFactory('slack')
       .setOperation('basicMessage')
       .setAttachments([questionButton])
@@ -52,8 +50,6 @@ module.exports = function(agenda) {
     const { ts } = await exec
       .one(slack, sendQuestions)
       .catch(e => console.log(e));
-
-    console.log('returned timestamp: ', ts);
 
     const pinQuestions = commandFactory('slack')
       .setOperation('addPin')

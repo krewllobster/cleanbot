@@ -1,10 +1,11 @@
 const exec = () => {
   const one = async (domain, command) => {
     console.log(
-      `executing "${command.operation}${command.entity
-        ? ' ' + command.entity
-        : ''}" through "${domain.name}"`
+      `executing "${command.operation}${
+        command.entity ? ' ' + command.entity : ''
+      }" through "${domain.name}"`
     );
+    console.log(command);
     return await domain.execute(command).catch(err => {
       console.log(command);
       console.log('error executing above command::' + err);

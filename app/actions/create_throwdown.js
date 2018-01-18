@@ -1,10 +1,6 @@
 const agenda = require('../../agenda');
 const { singleThrowdown, welcomeMessage } = require('../attachments');
-const {
-  processing: processingMessage,
-  findFullThrowdown,
-  findRandom
-} = require('../common');
+const { processing: processingMessage, findRandom } = require('../common');
 const moment = require('moment');
 
 module.exports = async (payload, submission, deps) => {
@@ -122,16 +118,14 @@ module.exports = async (payload, submission, deps) => {
   console.log('throwdown successfully created');
 
   //added
-  const findFullThrowdown = commandFactory('db')
+  const getFullThrowdown = commandFactory('db')
     .setOperation('findFull')
     .setEntity('Throwdown')
     .setMatch({ _id: doc._id })
     .save();
   //added
 
-  throwdown = await exec.one(dbInterface, findFullThrowdown);
-  console.log(throwdown);
-  // throwdown = await findFullThrowdown(deps, { matchFields: { _id: doc._id } });
+  throwdown = await exec.one(dbInterface, getFullThrowdown);
 
   let successTextPrivate = `Congrats, you’re the proud owner of a new invite-only throwdown! You should see a new channel in your channels list. Only people you invite below can join. Once you select their name, they’ll receive an invite message. You’ll get a message each time someone joins your throwdown. 
   

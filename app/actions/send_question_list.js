@@ -1,5 +1,4 @@
 const { selectQuestionButtons, genLeaderboard } = require('../attachments');
-const { findFullThrowdown } = require('../common');
 
 module.exports = async (payload, action, deps) => {
   const {

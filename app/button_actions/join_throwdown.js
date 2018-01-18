@@ -1,4 +1,3 @@
-const { findFullThrowdown, findAllThrowdowns } = require('../common');
 const { singleThrowdown } = require('../attachments');
 
 module.exports = async (data, deps) => {
@@ -12,10 +11,15 @@ module.exports = async (data, deps) => {
   } = data;
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
-  const throwdown = await findFullThrowdown(deps, {
-    matchFields: { _id: throwdown_id },
-    updateFields: { $push: { participants: user._id } }
-  });
+  const updateAndGetFull = commandFactory('db')
+    .setEntity('Throwdown')
+    .setOperation('findFullAndUpdate')
+    .setMatch({ _id: throwdown_id })
+    .setUpdate({ $push: { participants: user._id } })
+    .setOptions({ new: true })
+    .save();
+
+  const throwdown = await exec.one(dbInterface, updateAndGetFull);
 
   const confirmMessageBase = commandFactory('slack')
     .setOperation('updateMessage')

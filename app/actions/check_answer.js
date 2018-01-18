@@ -1,4 +1,4 @@
-const { findFullThrowdown, questionPoints } = require('../common');
+const { questionPoints } = require('../common');
 const {
   selectQuestionButtons,
   genLeaderboard,

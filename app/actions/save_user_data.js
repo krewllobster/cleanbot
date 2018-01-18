@@ -70,10 +70,8 @@ module.exports = async (payload, action, deps) => {
     [dbInterface, updateResponse]
   ]);
 
-  // const { nModified } = serverResponse;
-
   const successText = `Sweet! This might be part of a future bonus question :)`;
-  // const updateText = `Ok, apparently you didn't like your last answer! It's ok, we saved this one :)`;
+
   const questionAttachments = await selectQuestionButtons(
     throwdown_id,
     round,
@@ -84,13 +82,13 @@ module.exports = async (payload, action, deps) => {
 
   const rSummary = await roundSummary({ throwdown: throwdown_id, round }, deps);
 
-  if (rSummary) questionAttachments.unshift(rSummary);
+  if (rSummary && !!questionAttachments) questionAttachments.unshift(rSummary);
 
   const successMessage = commandFactory('slack')
     .setOperation('ephemeralMessage')
     .setChannel(channel_id)
     .setUser(user_id)
-    .setText(/*nModified > 0 ? updateText : */ successText)
+    .setText(successText)
     .setAttachments(questionAttachments)
     .save();
 
@@ -105,8 +103,6 @@ module.exports = async (payload, action, deps) => {
     .save();
 
   if (serverResponse) {
-    // do not think this call is necessary. genLeaderboard gets called on page load.
-    // await genLeaderboard(throwdown_id);
     return await exec.one(slack, successMessage);
   } else {
     return await exec.one(slack, errorMessage);

@@ -1,5 +1,5 @@
 const { singleQuestion } = require('../attachments');
-const { findFullThrowdown, shuffle } = require('../common');
+const { shuffle } = require('../common');
 const sendBonus = require('./send_bonus');
 
 module.exports = async (payload, action, deps) => {
