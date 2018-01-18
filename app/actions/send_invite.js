@@ -1,4 +1,4 @@
-const { findOrCreateUser, findFullThrowdown } = require('../common');
+const { findOrCreateUser } = require('../common');
 const { throwdownInvite, acceptInviteButtons } = require('../attachments');
 
 module.exports = async (payload, action, deps) => {
@@ -88,14 +88,6 @@ module.exports = async (payload, action, deps) => {
         .setUpdate({ $push: { invitees: userInvited._id } })
         .save();
 
-      // const getThrowdown = findFullThrowdown(deps, {
-      //   matchFields: { _id: throwdown._id },
-      //   updateFields: { $push: { invitees: userInvited._id } }
-      // });
-
-      // const [{ channel: inviteeChannel }, updatedThrowdown] = await Promise.all(
-      //   [exec.one(slack, getChannel), getThrowdown]
-      // );
       const inviteResponse = await exec
         .one(slack, getChannel)
         .catch(async err => {
