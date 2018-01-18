@@ -106,7 +106,9 @@ module.exports = function(agenda) {
     } else {
       await exec.one(slack, errorMessage);
     }
-
-    done();
+    agenda.cancel({ _id: job.attrs._id }, (err, numRemove) => {
+      console.log(`successfully removed ${numRemove} job(s)`);
+      done();
+    });
   });
 };
