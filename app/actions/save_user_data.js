@@ -33,5 +33,5 @@ module.exports = async (payload, action, deps) => {
     channel_id
   };
 
-  agenda.now('save user data', jobData);
+  agenda().now('save user data', jobData);
 };

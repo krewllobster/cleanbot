@@ -14,5 +14,5 @@ module.exports = async (payload, submission, deps) => {
     user
   };
 
-  agenda.now('save feedback', jobData);
+  agenda().now('save feedback', jobData);
 };

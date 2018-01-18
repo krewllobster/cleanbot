@@ -34,7 +34,8 @@ async function run() {
   return agenda;
 }
 
-module.exports = run().catch(error => {
-  console.error(error);
-  process.exit(-1);
-});
+module.exports = () =>
+  run().catch(error => {
+    console.error(error);
+    process.exit(-1);
+  });

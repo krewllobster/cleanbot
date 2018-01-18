@@ -1,4 +1,4 @@
-const { createJob } = require('../../agenda');
+const agenda = require('../../producer');
 
 module.exports = async (payload, submission, deps) => {
   const { channel: { id: channel_id } } = payload;
@@ -12,5 +12,5 @@ module.exports = async (payload, submission, deps) => {
     user: deps.user
   };
 
-  return createJob().now('save question report', jobData);
+  return agenda().now('save question report', jobData);
 };
