@@ -1,3 +1,5 @@
+const agenda = require('../../agenda');
+
 module.exports = async (payload, submission, deps) => {
   const {
     team: { id: team_id },
@@ -8,45 +10,55 @@ module.exports = async (payload, submission, deps) => {
   const { question_id, description } = submission;
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
-  console.log('reporting question');
-
-  let reportData = {
-    date: new Date(),
-    user: user._id,
-    description
+  const jobData = {
+    channel_id,
+    description,
+    question_id,
+    submitted: new Date(),
+    user
   };
 
-  const findAndUpdateQuestion = commandFactory('db')
-    .setOperation('findByIdAndUpdate')
-    .setEntity('Question')
-    .setMatch(question_id)
-    .setUpdate({ $push: { reports: reportData } })
-    .setOptions({ new: true })
-    .save();
+  agenda.now('save question report', jobData);
 
-  const updateResponse = await exec.one(dbInterface, findAndUpdateQuestion);
+  // console.log('reporting question');
 
-  console.log(updateResponse);
+  // let reportData = {
+  //   date: new Date(),
+  //   user: user._id,
+  //   description
+  // };
 
-  if (updateResponse) {
-    const sendReportSuccess = commandFactory('slack')
-      .setOperation('ephemeralMessage')
-      .setUser(user_id)
-      .setChannel(channel_id)
-      .setText('Your report has been received. Thank you!')
-      .save();
+  // const findAndUpdateQuestion = commandFactory('db')
+  //   .setOperation('findByIdAndUpdate')
+  //   .setEntity('Question')
+  //   .setMatch(question_id)
+  //   .setUpdate({ $push: { reports: reportData } })
+  //   .setOptions({ new: true })
+  //   .save();
 
-    return await exec.one(slack, sendReportSuccess);
-  } else {
-    const sendReportError = commandFactory('slack')
-      .setOperation('ephemeralMessage')
-      .setUser(user_id)
-      .setChannel(channel_id)
-      .setText(
-        'We were unable to save your report. Please try again in a few minutes.'
-      )
-      .save();
+  // const updateResponse = await exec.one(dbInterface, findAndUpdateQuestion);
 
-    return await exec.one(slack, sendReportError);
-  }
+  // console.log(updateResponse);
+
+  // if (updateResponse) {
+  //   const sendReportSuccess = commandFactory('slack')
+  //     .setOperation('ephemeralMessage')
+  //     .setUser(user_id)
+  //     .setChannel(channel_id)
+  //     .setText('Your report has been received. Thank you!')
+  //     .save();
+
+  //   return await exec.one(slack, sendReportSuccess);
+  // } else {
+  //   const sendReportError = commandFactory('slack')
+  //     .setOperation('ephemeralMessage')
+  //     .setUser(user_id)
+  //     .setChannel(channel_id)
+  //     .setText(
+  //       'We were unable to save your report. Please try again in a few minutes.'
+  //     )
+  //     .save();
+
+  //   return await exec.one(slack, sendReportError);
+  // }
 };
