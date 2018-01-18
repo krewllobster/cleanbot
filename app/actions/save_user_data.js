@@ -1,8 +1,5 @@
-const {
-  genLeaderboard,
-  selectQuestionButtons,
-  roundSummary
-} = require('../attachments');
+const { selectQuestionButtons, roundSummary } = require('../attachments');
+const agenda = require('../../agenda');
 
 module.exports = async (payload, action, deps) => {
   const {
@@ -29,82 +26,93 @@ module.exports = async (payload, action, deps) => {
 
   const { question, response, throwdown_id, round } = data;
 
-  const newdata = {
-    question: question._id,
+  const jobData = {
+    question_id: question._id,
     shortName: question.shortName,
     response,
-    user_id,
-    team_id,
-    user: user._id,
+    user,
     throwdown: throwdown_id,
-    round
+    round,
+    channel_id
   };
 
-  const updateResponse = commandFactory('db')
-    .setEntity('Response')
-    .setOperation('findOneAndUpdate')
-    .setMatch({
-      question: question._id,
-      user: user._id,
-      throwdown: throwdown_id,
-      round
-    })
-    .setUpdate({
-      responded: true
-    })
-    .save();
+  agenda.now('save user data', jobData);
+  // const newdata = {
+  //   question: question._id,
+  //   shortName: question.shortName,
+  //   response,
+  //   user_id,
+  //   team_id,
+  //   user: user._id,
+  //   throwdown: throwdown_id,
+  //   round
+  // };
 
-  const saveData = commandFactory('db')
-    .setEntity('UserData')
-    .setOperation('update')
-    .setMatch({
-      question: question._id,
-      user: user._id
-    })
-    .setUpdate(newdata)
-    .setOptions({ upsert: true, new: true })
-    .save();
+  // const updateResponse = commandFactory('db')
+  //   .setEntity('Response')
+  //   .setOperation('findOneAndUpdate')
+  //   .setMatch({
+  //     question: question._id,
+  //     user: user._id,
+  //     throwdown: throwdown_id,
+  //     round
+  //   })
+  //   .setUpdate({
+  //     responded: true
+  //   })
+  //   .save();
 
-  const serverResponse = await exec.many([
-    [dbInterface, saveData],
-    [dbInterface, updateResponse]
-  ]);
+  // const saveData = commandFactory('db')
+  //   .setEntity('UserData')
+  //   .setOperation('update')
+  //   .setMatch({
+  //     question: question._id,
+  //     user: user._id
+  //   })
+  //   .setUpdate(newdata)
+  //   .setOptions({ upsert: true, new: true })
+  //   .save();
 
-  const successText = `Sweet! This might be part of a future bonus question :)`;
+  // const serverResponse = await exec.many([
+  //   [dbInterface, saveData],
+  //   [dbInterface, updateResponse]
+  // ]);
 
-  const questionAttachments = await selectQuestionButtons(
-    throwdown_id,
-    round,
-    deps
-  );
+  // const successText = `Sweet! This might be part of a future bonus question :)`;
 
-  console.log(serverResponse);
+  // const questionAttachments = await selectQuestionButtons(
+  //   throwdown_id,
+  //   round,
+  //   deps
+  // );
 
-  const rSummary = await roundSummary({ throwdown: throwdown_id, round }, deps);
+  // console.log(serverResponse);
 
-  if (rSummary && !!questionAttachments) questionAttachments.unshift(rSummary);
+  // const rSummary = await roundSummary({ throwdown: throwdown_id, round }, deps);
 
-  const successMessage = commandFactory('slack')
-    .setOperation('ephemeralMessage')
-    .setChannel(channel_id)
-    .setUser(user_id)
-    .setText(successText)
-    .setAttachments(questionAttachments)
-    .save();
+  // if (rSummary && !!questionAttachments) questionAttachments.unshift(rSummary);
 
-  const errorMessage = commandFactory('slack')
-    .setOperation('ephemeralMessage')
-    .setChannel(channel_id)
-    .setUser(user_id)
-    .setText(
-      'Whoops, it looks like something went wrong saving your answer. Please try again!'
-    )
-    .setAttachments(questionAttachments)
-    .save();
+  // const successMessage = commandFactory('slack')
+  //   .setOperation('ephemeralMessage')
+  //   .setChannel(channel_id)
+  //   .setUser(user_id)
+  //   .setText(successText)
+  //   .setAttachments(questionAttachments)
+  //   .save();
 
-  if (serverResponse) {
-    return await exec.one(slack, successMessage);
-  } else {
-    return await exec.one(slack, errorMessage);
-  }
+  // const errorMessage = commandFactory('slack')
+  //   .setOperation('ephemeralMessage')
+  //   .setChannel(channel_id)
+  //   .setUser(user_id)
+  //   .setText(
+  //     'Whoops, it looks like something went wrong saving your answer. Please try again!'
+  //   )
+  //   .setAttachments(questionAttachments)
+  //   .save();
+
+  // if (serverResponse) {
+  //   return await exec.one(slack, successMessage);
+  // } else {
+  //   return await exec.one(slack, errorMessage);
+  // }
 };

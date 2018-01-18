@@ -55,7 +55,7 @@ module.exports = function(agenda) {
         .setText('Your report has been received. Thank you!')
         .save();
 
-      return await exec.one(slack, sendReportSuccess);
+      await exec.one(slack, sendReportSuccess);
     } else {
       const sendReportError = commandFactory('slack')
         .setOperation('ephemeralMessage')
@@ -66,7 +66,12 @@ module.exports = function(agenda) {
         )
         .save();
 
-      return await exec.one(slack, sendReportError);
+      await exec.one(slack, sendReportError);
     }
+
+    agenda.cancel({ _id: job.attrs._id }, (err, numRemove) => {
+      console.log(`successfully removed ${numRemove} job(s)`);
+      done();
+    });
   });
 };
