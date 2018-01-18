@@ -13,7 +13,6 @@ module.exports = async (payload, action, deps) => {
   const { slack, dbInterface, commandFactory, exec, user } = deps;
 
   let data;
-  console.log(action);
 
   if (action.value) data = JSON.parse(action.value);
 
@@ -21,8 +20,6 @@ module.exports = async (payload, action, deps) => {
     data = JSON.parse(action.selected_options[0].value);
 
   if (action.response) data = action;
-
-  console.log(data);
 
   const { question, response, throwdown_id, round } = data;
 

@@ -12,6 +12,5 @@ module.exports = async (payload, submission, deps) => {
     user: deps.user
   };
 
-  let res = agenda.now('save question report', jobData);
-  console.log(res);
+  return agenda.now('save question report', jobData);
 };
