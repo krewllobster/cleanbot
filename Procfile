@@ -1,2 +1,2 @@
 web: node server.js
-worker: node agenda.js
+worker: node initializeAgenda.js

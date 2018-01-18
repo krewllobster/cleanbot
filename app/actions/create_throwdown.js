@@ -1,4 +1,4 @@
-const agenda = require('../../agenda');
+const { createJob } = require('../../agenda');
 const { singleThrowdown, welcomeMessage } = require('../attachments');
 const { processing: processingMessage, findRandom } = require('../common');
 const moment = require('moment');
@@ -149,7 +149,7 @@ module.exports = async (payload, submission, deps) => {
   ]);
   //CHANGE QUESTION TIMING HERE
   console.log('scheduling question job start');
-  const questionsJob = agenda.create('send question buttons', {
+  const questionsJob = createJob().create('send question buttons', {
     throwdown_id: updatedThrowdown._id,
     team_id: team_id,
     user

@@ -1,5 +1,5 @@
 const { selectQuestionButtons, roundSummary } = require('../attachments');
-const agenda = require('../../agenda');
+const { createJob } = require('../../agenda');
 
 module.exports = async (payload, action, deps) => {
   const {
@@ -33,5 +33,5 @@ module.exports = async (payload, action, deps) => {
     channel_id
   };
 
-  agenda.now('save user data', jobData);
+  createJob().now('save user data', jobData);
 };
