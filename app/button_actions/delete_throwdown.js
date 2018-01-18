@@ -1,5 +1,4 @@
-const { createJob } = require('../../agenda');
-
+const agenda = require('../../producer');
 module.exports = async (data, deps) => {
   const {
     message_ts,
@@ -49,7 +48,7 @@ module.exports = async (data, deps) => {
   const allIds = await exec.one(dbInterface, getIds);
   const idList = allIds.map(i => i.id);
   console.log(idList);
-  createJob().jobs({}, (err, jobs) => {
+  agenda.jobs({}, (err, jobs) => {
     jobs.forEach(job => {
       console.log(job.attrs);
       const jobThrowdown = job.attrs.data.throwdown_id;
