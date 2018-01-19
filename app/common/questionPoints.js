@@ -1,5 +1,4 @@
 module.exports = ({ correct, duration, bonus, difficulty }) => {
-  console.log('question points diff: ', difficulty);
   const diffPoints = {
     easy: 30,
     medium: 40,
