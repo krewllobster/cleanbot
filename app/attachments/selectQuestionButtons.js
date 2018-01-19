@@ -126,8 +126,11 @@ module.exports = async (throwdown_id, round, deps) => {
   };
 
   questionResponses.forEach(r => (roundTotals[r.round] += 1));
-  allBonusResponses.forEach(r => (roundTotals[r.round] += 1));
-  userData.forEach(u => (roundTotals[u.round] += 1));
+  allBonusResponses
+    .filter(r => r.throwdown == r.throwdown_id)
+    .forEach(r => (roundTotals[r.round] += 1));
+
+  tdUserData.forEach(u => (roundTotals[u.round] += 1));
 
   console.log(JSON.stringify(roundTotals));
   const roundButtons = [];
