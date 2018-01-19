@@ -106,20 +106,6 @@ module.exports = async (payload, action, deps) => {
   };
 
   const attachmentsToSend = [answer];
-  console.log('nextQuestions to send ------');
-  console.log(nextQuestions);
-  if (
-    !nextQuestions ||
-    nextQuestions[0].actions.length === 0 ||
-    nextQuestions[0].callback_id == 'leaderboard' ||
-    nextQuestions[0].callback_id == 'send_question_list'
-  ) {
-    let rSummary = await roundSummary({ throwdown: throwdown_id, round }, deps);
-    console.log(rSummary);
-    if (rSummary) {
-      attachmentsToSend.push(rSummary);
-    }
-  }
 
   if (!!nextQuestions) attachmentsToSend.push(...nextQuestions);
 

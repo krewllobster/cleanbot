@@ -41,11 +41,43 @@ module.exports = async (payload, action, deps) => {
     return await exec.one(slack, sendAdminMessage);
   }
 
-  const questionsToAttach = await selectQuestionButtons(
-    throwdown_id,
-    round,
-    deps
-  );
+  //ALL responses belonging to user
+  const getResponses = commandFactory('db')
+    .setEntity('Response')
+    .setOperation('find')
+    .setMatch({ user: user._id })
+    .setPopulate('question')
+    .save();
+
+  //questions belonging to throwdown
+  const getQuestions = commandFactory('db')
+    .setEntity('Throwdown')
+    .setOperation('findOne')
+    .setMatch({ _id: throwdown_id })
+    .setPopulate([{ path: 'questions.question', model: 'Question' }])
+    .save();
+
+  //userData belonging to user from this throwdown
+  const getUserData = commandFactory('db')
+    .setEntity('UserData')
+    .setOperation('find')
+    .setMatch({
+      user: user._id
+    })
+    .save();
+
+  const [responses, throwdown, userData] = await exec.many([
+    [dbInterface, getResponses],
+    [dbInterface, getQuestions],
+    [dbInterface, getUserData]
+  ]);
+
+  const questionsToAttach = await selectQuestionButtons(throwdown_id, round, {
+    responses,
+    throwdown,
+    userData,
+    user
+  });
 
   let questionButtonText = `
     Choose a difficulty below to get this round's questions. We'll start timing you when you select a difficulty, and stop the timer when you select an answer.

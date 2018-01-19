@@ -9,7 +9,7 @@ module.exports = function(agenda) {
       shortName,
       response,
       user,
-      throwdown,
+      throwdown: throwdown_id,
       round,
       channel_id
     } = job.attrs.data;
@@ -36,7 +36,7 @@ module.exports = function(agenda) {
       user_id: user.user_id,
       team_id: user.team_id,
       user: user._id,
-      throwdown,
+      throwdown: throwdown_id,
       round
     };
 
@@ -46,7 +46,7 @@ module.exports = function(agenda) {
       .setMatch({
         question: question_id,
         user: user._id,
-        throwdown,
+        throwdown: throwdown_id,
         round
       })
       .setUpdate({ $set: { responded: true } })
@@ -70,18 +70,43 @@ module.exports = function(agenda) {
 
     const successText = `Sweet! This might be part of a future bonus question :)`;
 
-    const questionAttachments = await selectQuestionButtons(
-      throwdown,
-      round,
-      deps
-    );
+    //ALL responses belonging to user
+    const getResponses = commandFactory('db')
+      .setEntity('Response')
+      .setOperation('find')
+      .setMatch({ user: user._id })
+      .setPopulate('question')
+      .save();
 
-    console.log(serverResponse);
+    //questions belonging to throwdown
+    const getQuestions = commandFactory('db')
+      .setEntity('Throwdown')
+      .setOperation('findOne')
+      .setMatch({ _id: throwdown_id })
+      .setPopulate([{ path: 'questions.question', model: 'Question' }])
+      .save();
 
-    const rSummary = await roundSummary({ throwdown, round }, deps);
+    //userData belonging to user from this throwdown
+    const getUserData = commandFactory('db')
+      .setEntity('UserData')
+      .setOperation('find')
+      .setMatch({
+        user: user._id
+      })
+      .save();
 
-    if (rSummary && !!questionAttachments)
-      questionAttachments.unshift(rSummary);
+    const [responses, throwdownQuestions, userData] = await exec.many([
+      [dbInterface, getResponses],
+      [dbInterface, getQuestions],
+      [dbInterface, getUserData]
+    ]);
+
+    let questionAttachments = await selectQuestionButtons(throwdown_id, round, {
+      responses,
+      throwdown: throwdownQuestions,
+      userData,
+      user
+    });
 
     const successMessage = commandFactory('slack')
       .setOperation('ephemeralMessage')

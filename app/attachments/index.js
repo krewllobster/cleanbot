@@ -9,5 +9,6 @@ module.exports = {
   questionRoundButton: require('./questionRoundButton'),
   welcomeMessage: require('./welcomeMessage'),
   formatBonus: require('./formatBonus'),
-  roundSummary: require('./roundSummary')
+  roundSummary: require('./roundSummary'),
+  throwdownSummary: require('./throwdownSummary')
 };

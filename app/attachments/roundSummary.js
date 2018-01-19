@@ -1,30 +1,6 @@
 const { questionPoints } = require('../common');
 
-module.exports = async ({ throwdown, round }, deps) => {
-  const { slack, dbInterface, commandFactory, exec, user } = deps;
-
-  const getRoundResponses = commandFactory('db')
-    .setEntity('Response')
-    .setOperation('find')
-    .setMatch({ throwdown, round, user })
-    .setPopulate('question')
-    .save();
-
-  const getPersonalBonuses = commandFactory('db')
-    .setEntity('UserData')
-    .setOperation('find')
-    .setMatch({ throwdown, round, user })
-    .setPopulate('question')
-    .save();
-
-  const [roundResponses, roundUserData] = await exec.many([
-    [dbInterface, getRoundResponses],
-    [dbInterface, getPersonalBonuses]
-  ]);
-
-  console.log('**round user data**');
-  console.log(roundUserData);
-
+module.exports = (roundResponses, roundUserData, round, throwdown_id) => {
   let correctCount = 0;
   let correctPoints = 0;
   let bonusCount = 0 + roundUserData.length;
@@ -86,7 +62,7 @@ module.exports = async ({ throwdown, round }, deps) => {
       ],
       footer: `View leaderboard: ${
         process.env.URL_BASE
-      }/leaderboards/${throwdown}`
+      }/leaderboards/${throwdown_id}`
     };
   } else {
     return false;

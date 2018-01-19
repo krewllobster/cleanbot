@@ -1,9 +1,16 @@
 module.exports = ({ correct, duration, bonus, difficulty }) => {
-  const diffPoints = {
+  const diffPointsCorrect = {
     easy: 30,
     medium: 40,
     hard: 50,
     unknown: 50
+  };
+
+  const diffPointsIncorrect = {
+    easy: -20,
+    medium: -10,
+    hard: 0,
+    unknown: 0
   };
 
   const diffDurations = {
@@ -17,7 +24,9 @@ module.exports = ({ correct, duration, bonus, difficulty }) => {
   if (bonus && !correct) return 0;
 
   let points =
-    (correct ? diffPoints[difficulty] : 0) -
+    (correct
+      ? diffPointsCorrect[difficulty]
+      : diffPointsIncorrect[difficulty]) -
     duration * diffDurations[difficulty];
   if (correct && points <= 10) points = 10;
   if (!correct && points <= -20) points = -20;

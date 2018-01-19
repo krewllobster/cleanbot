@@ -1,45 +1,58 @@
 const { brandColor } = require('../constants');
 const questionRoundButton = require('./questionRoundButton');
 const singleQuestion = require('./singleQuestion');
+const roundSummary = require('./roundSummary');
+const throwdownSummary = require('./throwdownSummary');
 
-module.exports = async (throwdown_id, round, deps) => {
+module.exports = async (
+  throwdown_id,
+  round,
+  { responses, throwdown, userData, user }
+) => {
   console.log('selecting next questions for round ', round);
-  const { slack, dbInterface, commandFactory, exec, user } = deps;
+  // const { slack, dbInterface, commandFactory, exec, user } = deps;
 
-  //ALL responses belonging to user
-  const getResponses = commandFactory('db')
-    .setEntity('Response')
-    .setOperation('find')
-    .setMatch({ user: user._id })
-    .setPopulate('question')
-    .save();
+  // //ALL responses belonging to user
+  // const getResponses = commandFactory('db')
+  //   .setEntity('Response')
+  //   .setOperation('find')
+  //   .setMatch({ user: user._id })
+  //   .setPopulate('question')
+  //   .save();
 
-  //questions belonging to throwdown
-  const getQuestions = commandFactory('db')
-    .setEntity('Throwdown')
-    .setOperation('findOne')
-    .setMatch({ _id: throwdown_id })
-    .setPopulate([{ path: 'questions.question', model: 'Question' }])
-    .save();
+  // //questions belonging to throwdown
+  // const getQuestions = commandFactory('db')
+  //   .setEntity('Throwdown')
+  //   .setOperation('findOne')
+  //   .setMatch({ _id: throwdown_id })
+  //   .setPopulate([{ path: 'questions.question', model: 'Question' }])
+  //   .save();
 
-  //userData belonging to user from this throwdown
-  const getUserData = commandFactory('db')
-    .setEntity('UserData')
-    .setOperation('find')
-    .setMatch({
-      user: user._id
-    })
-    .save();
+  // //userData belonging to user from this throwdown
+  // const getUserData = commandFactory('db')
+  //   .setEntity('UserData')
+  //   .setOperation('find')
+  //   .setMatch({
+  //     user: user._id
+  //   })
+  //   .save();
 
-  const [responses, throwdown, userData] = await exec.many([
-    [dbInterface, getResponses],
-    [dbInterface, getQuestions],
-    [dbInterface, getUserData]
-  ]);
+  // const [responses, throwdown, userData] = await exec.many([
+  //   [dbInterface, getResponses],
+  //   [dbInterface, getQuestions],
+  //   [dbInterface, getUserData]
+  // ]);
 
   //user's responses to THIS throwdown
   const questionResponses = responses.filter(
     r => !r.bonus && r.throwdown == throwdown_id
+  );
+  const tdResponses = responses.filter(
+    r => r.throwdown.toString() == throwdown_id
+  );
+  //responses this round
+  const roundResponses = responses.filter(
+    r => r.round == round && r.throwdown == throwdown_id
   );
   //user's responses to ALL bonus questions asked
   const allBonusResponses = responses.filter(r => r.bonus);
@@ -111,6 +124,8 @@ module.exports = async (throwdown_id, round, deps) => {
     ];
   }
 
+  console.log('no remaining rounds');
+
   //if there are no quesitons left, count the responded questions for each round
   const roundTotals = {
     '1': 0,
@@ -126,13 +141,10 @@ module.exports = async (throwdown_id, round, deps) => {
   };
 
   questionResponses.forEach(r => (roundTotals[r.round] += 1));
-  allBonusResponses
-    .filter(r => r.throwdown == r.throwdown_id)
-    .forEach(r => (roundTotals[r.round] += 1));
+  tdBonusResponses.forEach(r => (roundTotals[r.round] += 1));
 
   tdUserData.forEach(u => (roundTotals[u.round] += 1));
 
-  console.log(JSON.stringify(roundTotals));
   const roundButtons = [];
 
   Object.keys(roundTotals).forEach(r => {
@@ -142,15 +154,19 @@ module.exports = async (throwdown_id, round, deps) => {
     }
   });
 
-  console.log('round buttons');
-  console.log(roundButtons);
-  console.log(roundButtons.length);
-
   const questionNumber = roundButtons.length;
-  console.log('there are ', questionNumber, ' questions left');
-  //if any unfinished rounds, send list of round buttons
+  //if any unfinished rounds, send list of round buttons as well as round summary
+  const rSummary = roundSummary(
+    roundResponses,
+    roundUserData,
+    round,
+    throwdown_id
+  );
+  const tdSummary = throwdownSummary(tdResponses, tdUserData, throwdown_id);
+  console.log('good after summaries');
   if (questionNumber > 0) {
-    let toReturn = [
+    return [
+      rSummary,
       {
         color: brandColor,
         text: `You have some unfinished rounds -- do them while you're hot!`,
@@ -158,8 +174,8 @@ module.exports = async (throwdown_id, round, deps) => {
         actions: roundButtons
       }
     ];
-    console.log('has questions ', toReturn);
-    return toReturn;
+  } else if (questionNumber == 0) {
+    return [rSummary, tdSummary];
   }
 
   //otherwise send back a leaderboard message
