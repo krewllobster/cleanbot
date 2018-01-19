@@ -48,20 +48,20 @@ module.exports = async (data, deps) => {
 
   const allIds = await exec.one(dbInterface, getIds);
   const idList = allIds.map(i => i.id);
-  console.log(idList);
-  agenda.jobs({}, (err, jobs) => {
-    jobs.forEach(job => {
-      console.log(job.attrs);
-      const jobThrowdown = job.attrs.data.throwdown_id;
-      console.log('job throwdown: ', jobThrowdown);
-      if (!idList.includes(job.attrs.data.throwdown_id.toString())) {
-        console.log(
-          `removing job for throwdown ${job.attrs.data.throwdown_id}`
-        );
-        job.remove();
-      }
-    });
-  });
+  // console.log(idList);
+  // agenda.jobs({}, (err, jobs) => {
+  //   jobs.forEach(job => {
+  //     console.log(job.attrs);
+  //     const jobThrowdown = job.attrs.data.throwdown_id;
+  //     console.log('job throwdown: ', jobThrowdown);
+  //     if (!idList.includes(job.attrs.data.throwdown_id.toString())) {
+  //       console.log(
+  //         `removing job for throwdown ${job.attrs.data.throwdown_id}`
+  //       );
+  //       job.remove();
+  //     }
+  //   });
+  // });
 
   const successfulDelete = commandFactory('slack')
     .setOperation('updateMessage')
@@ -94,8 +94,9 @@ module.exports = async (data, deps) => {
       .setOperation('basicMessage')
       .setChannel(channel.id)
       .setText(
-        `Throwdown "${deletedThrowdown.name}" has been deleted by ${deletedThrowdown
-          .created_by.user_id}`
+        `Throwdown "${deletedThrowdown.name}" has been deleted by ${
+          deletedThrowdown.created_by.user_id
+        }`
       )
       .save();
 
