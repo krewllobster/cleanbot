@@ -20,8 +20,8 @@ module.exports = ({ correct, duration, bonus, difficulty }) => {
     unknown: 2
   };
 
-  if (bonus && correct) return 20;
-  if (bonus && !correct) return 0;
+  if (bonus && correct && coworker_id) return 20;
+  if (bonus && !correct && coworker_id) return 0;
 
   let points =
     (correct

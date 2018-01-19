@@ -82,6 +82,7 @@ module.exports = async (payload, action, deps) => {
     correct: updatedResponseRes.correct,
     duration: updatedResponseRes.duration,
     bonus: updatedResponseRes.bonus,
+    coworker_id: updatedResponseRes.coworker_id || null,
     difficulty: question.difficulty
   };
 

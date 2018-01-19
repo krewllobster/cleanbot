@@ -28,6 +28,7 @@ const genLeaderBoard = async throwdown_id => {
       correct: r.correct,
       duration: r.duration,
       bonus: r.bonus,
+      coworker_id: r.coworker_id,
       difficulty: r.question.difficulty
     };
     reducedData[name] += questionPoints(forPoints);
