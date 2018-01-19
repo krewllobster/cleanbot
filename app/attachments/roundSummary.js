@@ -13,7 +13,7 @@ module.exports = (roundResponses, roundUserData, round, throwdown_id) => {
     let points = questionPoints({
       correct: r.correct,
       bonus: r.bonus,
-      coworker_id: r.coworker_id,
+      coworker_id: r.coworker_id || null,
       difficulty: r.question.difficulty,
       duration: r.duration
     });
