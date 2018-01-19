@@ -101,7 +101,7 @@ module.exports = function(agenda) {
       [dbInterface, getUserData]
     ]);
 
-    let questionAttachments = await selectQuestionButtons(throwdown_id, round, {
+    let questionAttachments = selectQuestionButtons(throwdown_id, round, {
       responses,
       throwdown: throwdownQuestions,
       userData,

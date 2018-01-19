@@ -4,7 +4,7 @@ const singleQuestion = require('./singleQuestion');
 const roundSummary = require('./roundSummary');
 const throwdownSummary = require('./throwdownSummary');
 
-module.exports = async (
+module.exports = (
   throwdown_id,
   round,
   { responses, throwdown, userData, user }

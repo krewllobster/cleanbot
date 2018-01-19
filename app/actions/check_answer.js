@@ -87,7 +87,42 @@ module.exports = async (payload, action, deps) => {
 
   const points = questionPoints(forPoints);
 
-  const nextQuestions = await selectQuestionButtons(throwdown_id, round, deps);
+  const getResponses = commandFactory('db')
+    .setEntity('Response')
+    .setOperation('find')
+    .setMatch({ user: user._id })
+    .setPopulate('question')
+    .save();
+
+  //questions belonging to throwdown
+  const getQuestions = commandFactory('db')
+    .setEntity('Throwdown')
+    .setOperation('findOne')
+    .setMatch({ _id: throwdown_id })
+    .setPopulate([{ path: 'questions.question', model: 'Question' }])
+    .save();
+
+  //userData belonging to user from this throwdown
+  const getUserData = commandFactory('db')
+    .setEntity('UserData')
+    .setOperation('find')
+    .setMatch({
+      user: user._id
+    })
+    .save();
+
+  const [responses, throwdownQuestions, userData] = await exec.many([
+    [dbInterface, getResponses],
+    [dbInterface, getQuestions],
+    [dbInterface, getUserData]
+  ]);
+
+  const nextQuestions = selectQuestionButtons(throwdown_id, round, {
+    responses,
+    throwdown: throwdownQuestions,
+    userData,
+    user
+  });
 
   const durationText =
     duration > 60
