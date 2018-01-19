@@ -19,7 +19,9 @@ module.exports = function(agenda) {
       bot: { bot_access_token: bot_token }
     } = await exec.one(dbInterface, getKeys);
 
-    deps.slack = slackApi({ user_token, bot_token });
+    slack = slackApi({ user_token, bot_token });
+
+    deps.slack = slack;
 
     const getUpdatedThrowdown = commandFactory('db')
       .setEntity('Throwdown')
