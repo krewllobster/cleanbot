@@ -1,4 +1,4 @@
-module.exports = ({ correct, duration, bonus, difficulty }) => {
+module.exports = ({ correct, duration, bonus, difficulty, coworker_id }) => {
   const diffPointsCorrect = {
     easy: 30,
     medium: 40,

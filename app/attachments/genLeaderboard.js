@@ -19,9 +19,14 @@ const genLeaderBoard = async throwdown_id => {
     { path: 'question', model: 'Question' }
   ]);
 
+  console.log(personalBonuses.map(b => ({ round: b.round })));
   const reducedData = {};
 
-  responses.forEach(r => {
+  const nonPersonalResponses = responses.filter(
+    r => !r.bonus || (r.bonus && r.coworker_id)
+  );
+
+  nonPersonalResponses.forEach(r => {
     let name = r.user.user_name;
     if (!reducedData[name]) reducedData[name] = 0;
     let forPoints = {
@@ -31,6 +36,12 @@ const genLeaderBoard = async throwdown_id => {
       coworker_id: r.coworker_id || null,
       difficulty: r.question.difficulty
     };
+    console.log({
+      user: r.user.user_name,
+      round: r.round,
+      correct: r.correct,
+      points: questionPoints(forPoints)
+    });
     reducedData[name] += questionPoints(forPoints);
   });
 
@@ -38,6 +49,11 @@ const genLeaderBoard = async throwdown_id => {
     let name = b.user.user_name;
     if (!reducedData[name]) reducedData[name] = 0;
     reducedData[name] += 20;
+    console.log({
+      user: b.user.user_name,
+      round: b.round,
+      total: reducedData[name]
+    });
   });
 
   const tdData = await Throwdown.findOne(
