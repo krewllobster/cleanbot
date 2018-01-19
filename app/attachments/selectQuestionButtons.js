@@ -129,6 +129,7 @@ module.exports = async (throwdown_id, round, deps) => {
   allBonusResponses.forEach(r => (roundTotals[r.round] += 1));
   userData.forEach(u => (roundTotals[u.round] += 1));
 
+  console.log(JSON.stringify(roundTotals));
   const roundButtons = [];
 
   Object.keys(roundTotals).forEach(r => {
